@@ -1,2 +1,2 @@
 # TeamsUtils
-Some Microsoft Teams utilities
+Some Microsoft Teams utilities/scripts
