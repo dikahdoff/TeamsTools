@@ -3,7 +3,7 @@
 ///////////////////
 
 /*
-After you've joined a Meeting press Ctrl+Shift+I and paste the whole code (Ctrl+A) into the console section of the window.
+After you've joined a Meeting press Ctrl+Shift+I and paste the whole code (Ctrl+A) into the console section of the window and press enter.
 The script will automatically press the disconnect button after the current number of people in the meeting is lower then the below set threshold
 
 If you want to manually stop the script, write 'cancelAction()' then press enter in the console window.
