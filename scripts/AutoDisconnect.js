@@ -29,6 +29,7 @@ function sleep(ms) {
 var dotask = true;
 async function action() {
     dotask = true;
+    console.clear()
     while(dotask) {
         var sum = 0;
         // Open sidepanel if necessary
