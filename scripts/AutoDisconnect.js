@@ -15,10 +15,10 @@ If you want to restart the script, write 'action()' then press enter in the cons
 ///////////////////
 
 // If people currently in meeting is less then this number, the script auto-disconnects, then ends.
-var threshold = 5;
+var threshold = 8;
 
 // Delay that the script checks count after. (in milliseconds)
-var delay = 2000;
+var delay = 1000;
 
 ///////////////////
 
