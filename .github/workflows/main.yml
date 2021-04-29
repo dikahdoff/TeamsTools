@@ -36,6 +36,6 @@ jobs:
           # Directory that contains the minified files. Defaults to same directory
           output: scripts/extension 
           # Descend at most levels (a non-negative integer) levels of directories below the starting-points.
-          maxdepth: 0
+          maxdepth: 1
           # Specifies which of the supported packages minifies JS files.
           js_engine: babel
