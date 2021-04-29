@@ -2,6 +2,7 @@
 	"title": "TeamsUtils (by dikahdoff)",
 	"subtitle": "Download at https://github.com/dikahdoff/TeamsUtils",
 	"link": "https://github.com/dikahdoff/TeamsUtils",
+	"teamsLink": "https://teams.microsoft.com",
 	"scripts": [
 		{
 			"name": "AutoDisconnect",
