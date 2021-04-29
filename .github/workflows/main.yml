@@ -34,7 +34,7 @@ jobs:
           # Directory that contains the files you want to minify. Defaults to current directory (.)
           directory: scripts
           # Directory that contains the minified files. Defaults to same directory
-          output: scripts/extension 
+          output: scripts
           # Descend at most levels (a non-negative integer) levels of directories below the starting-points.
           maxdepth: 1
           # Specifies which of the supported packages minifies JS files.
