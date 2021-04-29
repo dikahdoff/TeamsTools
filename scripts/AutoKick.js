@@ -17,7 +17,7 @@ If you want to restart the script, write 'kickingAction()' then press enter in t
 // Delay that the script acts after. (in milliseconds)
 var kickDelay = 150;
 
-// User to kick
+// User to target with the kick bot
 var targetName = "John Smith";
 
 ///////////////////
