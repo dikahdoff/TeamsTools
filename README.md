@@ -1,4 +1,4 @@
-# TeamsUtils
+# TeamsUtils [![AutoMinifyExtensionScripts](https://github.com/dikahdoff/TeamsUtils/actions/workflows/main.yml/badge.svg?branch=main)](https://github.com/dikahdoff/TeamsUtils/actions/workflows/main.yml)
 Some Microsoft Teams utilities/scripts
 
 ## Scripts
