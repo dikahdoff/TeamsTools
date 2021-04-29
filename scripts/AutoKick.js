@@ -15,10 +15,10 @@ If you want to restart the script, write 'kickingAction()' then press enter in t
 ///////////////////
 
 // Delay that the script acts after. (in milliseconds)
-var kickDelay = 50;
+var kickDelay = 150;
 
 // User to kick
-var targetName = "kigány";
+var targetName = "John Smith";
 
 ///////////////////
 
