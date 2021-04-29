@@ -39,3 +39,9 @@ jobs:
           maxdepth: 1
           # Specifies which of the supported packages minifies JS files.
           js_engine: babel
+      # Auto commits minified files to the repository
+      - name: Auto committing minified files
+        uses: stefanzweifel/git-auto-commit-action@v3.0.0
+        with:
+          commit_message: "Auto minified JS"
+          branch: ${{ github.ref }}
