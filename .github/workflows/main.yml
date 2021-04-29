@@ -1,0 +1,47 @@
+# This is a basic workflow to help you get started with Actions
+
+name: AutoMinifyExtensionScripts
+
+# Controls when the action will run. 
+on:
+  # Triggers the workflow on push or pull request events but only for the main branch
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      # Runs a single command using the runners shell
+      - name: Auto Minify
+        # You may pin to the exact commit or the version.
+        # uses: nizarmah/auto-minify@f8323743bad5df5496e89eb086cb8aeb5e523866
+        uses: nizarmah/auto-minify@v2.0
+        with:
+          # Directory that contains the files you want to minify. Defaults to current directory (.)
+          directory: scripts
+          # Directory that contains the minified files. Defaults to same directory
+          output: scripts
+          # Descend at most levels (a non-negative integer) levels of directories below the starting-points.
+          maxdepth: 1
+          # Specifies which of the supported packages minifies JS files.
+          js_engine: babel
+      # Auto commits minified files to the repository
+      - name: Auto committing minified files
+        uses: stefanzweifel/git-auto-commit-action@v3.0.0
+        with:
+          commit_message: "Auto minified JS"
+          branch: ${{ github.ref }}
