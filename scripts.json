@@ -2,17 +2,17 @@
 	"scripts": [
 		{
 			"name": "AutoDisconnect",
-			"url": "https://raw.githubusercontent.com/dikahdoff/TeamsUtils/main/scripts/extension/AutoDisconnect.js",
+			"url": "https://raw.githubusercontent.com/dikahdoff/TeamsUtils/main/scripts/AutoDisconnect.js",
 			"description": "Automatically disconnects after the current number of people is lower then the set threshold."
 		},
 		{
 			"name": "AutoKick",
-			"url": "https://raw.githubusercontent.com/dikahdoff/TeamsUtils/main/scripts/extension/AutoKick.js",
+			"url": "https://raw.githubusercontent.com/dikahdoff/TeamsUtils/main/scripts/AutoKick.js",
 			"description": "Automatically kicks a selected person every time they are in the meeting. (AutoKick Bot)"
 		},
 		{
 			"name": "AutoJoinMeeting",
-			"url": "https://raw.githubusercontent.com/dikahdoff/TeamsUtils/main/scripts/extension/AutoJoinMeeting.js",
+			"url": "https://raw.githubusercontent.com/dikahdoff/TeamsUtils/main/scripts/AutoJoinMeeting.js",
 			"description": "Automatically join a meeting if available in the selected channel."
 		}
 	]
