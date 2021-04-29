@@ -43,7 +43,6 @@ async function kickingAction() {
             dokicking = false;
             console.error("The delay cannot be lower then 50ms, because Teams will freak out.\nDownload this script: https://github.com/dikahdoff/TeamsUtils");
         } else {
-            // Count users (Sidepanel must be open) 
             var elements = document.getElementsByTagName("calling-roster-section");
             for (var i = 0; i < elements.length; i++) {
                 if(elements[i].getAttribute("participants-list") != "ctrl.participantsFromMeeting" && elements[i].getAttribute("participants-list") != "ctrl.participantsFromTeamSuggestions") {
