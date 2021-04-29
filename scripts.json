@@ -1,4 +1,6 @@
 {
+	"title": "TeamsUtils (by dikahdoff)",
+	"subtitle": "Download at https://github.com/dikahdoff/TeamsUtils",
 	"scripts": [
 		{
 			"name": "AutoDisconnect",
