@@ -3,17 +3,112 @@
 		{
 			"name": "AutoDisconnect",
 			"url": "https://raw.githubusercontent.com/dikahdoff/TeamsUtils/main/scripts/AutoDisconnect.js",
-			"description": "Automatically disconnects after the current number of people is lower then the set threshold."
+			"description": "Automatically disconnects after the current number of people is lower then the set threshold.",
+			"settings": [
+				{
+					"name": "Attendee Threshold",
+					"description": "If people currently in meeting is less then this number, the script auto-disconnects.",
+					"settings": [
+						{
+							"key": "threshold",
+							"type": "int",
+							"default": 8
+						}
+					]
+				},
+				{
+					"name": "Delay",
+					"description": "Delay that the script checks count after. (in milliseconds)",
+					"settings": [
+						{
+							"key": "delay",
+							"type": "int",
+							"default": 1000
+						}
+					]
+				}
+			]
 		},
 		{
 			"name": "AutoKick",
 			"url": "https://raw.githubusercontent.com/dikahdoff/TeamsUtils/main/scripts/AutoKick.js",
-			"description": "Automatically kicks a selected person every time they are in the meeting. (AutoKick Bot)"
+			"description": "Automatically kicks a selected person every time they are in the meeting. (AutoKick Bot)",
+			"settings": [
+				{
+					"name": "Kick Delay",
+					"description": "Delay that the script acts after. (in milliseconds)",
+					"settings": [
+						{
+							"key": "kickDelay",
+							"type": "int",
+							"default": 150
+						}
+					]
+				},
+				{
+					"name": "Target Name",
+					"description": "User to kick",
+					"settings": [
+						{
+							"key": "targetName",
+							"type": "str",
+							"default": "John Smith"
+						}
+					]
+				}
+			]
 		},
 		{
 			"name": "AutoJoinMeeting",
 			"url": "https://raw.githubusercontent.com/dikahdoff/TeamsUtils/main/scripts/AutoJoinMeeting.js",
-			"description": "Automatically join a meeting if available in the selected channel."
+			"description": "Automatically join a meeting if available in the selected channel.",
+			"settings": [
+				{
+					"name": "Join Delay",
+					"description": "Delay that the script acts after. (in milliseconds)",
+					"settings": [
+						{
+							"key": "joinDelay",
+							"type": "int",
+							"default": 1000
+						}
+					]
+				},
+				{
+					"name": "Wait time before joining",
+					"description": "Delay to wait before joining. (in milliseconds)",
+					"settings": [
+						{
+							"key": "joinWait",
+							"type": "int",
+							"default": 5000
+						}
+					]
+				},
+				{
+					"name": "Switch to a team/channel before searching",
+					"description": "",
+					"settings": [
+						{
+							"key": "switchChannel",
+							"type": "bool",
+							"default": false
+						},
+						{
+							"key": "switchTo",
+							"name": "Team name to switch to",
+							"type": "str",
+							"default": "TeamName"
+						},
+						{
+							"key": "switchToChannel",
+							"name": "Switch to a team/channel before searching",
+							"type": "str",
+							"default": "ChannelName"
+						}
+					]
+				}
+			]
 		}
 	]
 }
