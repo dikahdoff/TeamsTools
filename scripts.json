@@ -5,7 +5,7 @@
 	"teamsLink": "https://teams.microsoft.com",
 	"latestVersion": "0.1",
 	"scripts": [
-		{
+		"AutoDisconnect": {
 			"name": "Auto Disconnect",
 			"key": "AutoDisconnect",
 			"url": "https://raw.githubusercontent.com/dikahdoff/TeamsUtils/main/scripts/AutoDisconnect.js",
@@ -35,7 +35,7 @@
 				}
 			]
 		},
-		{
+		"AutoKick": {
 			"name": "Auto Kick",
 			"key": "AutoKick",
 			"url": "https://raw.githubusercontent.com/dikahdoff/TeamsUtils/main/scripts/AutoKick.js",
@@ -65,7 +65,7 @@
 				}
 			]
 		},
-		{
+		"AutoJoinMeeting": {
 			"name": "Auto Join Meeting",
 			"key": "AutoJoinMeeting",
 			"url": "https://raw.githubusercontent.com/dikahdoff/TeamsUtils/main/scripts/AutoJoinMeeting.js",
