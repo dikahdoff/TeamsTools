@@ -1,0 +1,33 @@
+{
+	"manifest_version": 3,
+	"name": "TeamsUtils",
+	"version": "0.1",
+	"author": [{
+	  "name": "dikahdoff",
+	  "email": "dikahdoff@gmail.com"
+	}],
+	"homepage_url": "https://github.com/dikahdoff/TeamsUtils",
+	"description": "Some Microsoft Teams utilities/scripts",
+	"icons": { "64": "icon-64.png",
+			   "128": "icon-128.png",
+		       "1200": "icon-full.png" },
+	"action": {
+		"default_title": "TeamsUtils",
+		"default_popup": "popup.html"
+	},
+	"permissions": [
+		"tabs",
+		"scripting"
+	],
+	"host_permissions":["*://teams.microsoft.com/*"],
+	"content_scripts": [
+		{
+			"matches": [
+				"*://teams.microsoft.com/*"
+			],
+			"js": [
+				"content.js"
+			]
+		}
+	]
+}
