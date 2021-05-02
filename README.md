@@ -1,6 +1,9 @@
 # TeamsUtils
 Some Microsoft Teams utilities/scripts
 
+## Browser Extension (for easier use)
+Visit the [Wiki page](https://github.com/dikahdoff/TeamsUtils/wiki/Extension-installation-guide) for installation instructions
+
 ## Scripts
 - [AutoDisconnect](scripts/AutoDisconnect.js)
   **[Web only]** Automatically disconnects after the current number of people is lower then the set threshold.
