@@ -1,5 +1,5 @@
 # TeamsUtils
-Some Microsoft Teams utilities/scripts
+![header](https://raw.githubusercontent.com/dikahdoff/TeamsUtils/main/resources/header.png)
 
 ## Browser Extension (for easier use)
 Visit the [Wiki page](https://github.com/dikahdoff/TeamsUtils/wiki/Extension-installation-guide) for installation instructions
