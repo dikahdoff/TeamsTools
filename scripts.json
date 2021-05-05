@@ -3,6 +3,7 @@
 	"subtitle": "Download at https://github.com/dikahdoff/TeamsUtils",
 	"link": "https://github.com/dikahdoff/TeamsUtils",
 	"teamsLink": "https://teams.microsoft.com",
+	"teamsTitle": "TeamsUtils",
 	"latestVersion": "0.1",
 	"scripts": [
 		{
