@@ -121,5 +121,10 @@
 				}
 			]
 		}
-	]
+	],
+	"status": {
+		"running": "✔️",
+		"stopped": "❌",
+		"error": "error"
+	}
 }
