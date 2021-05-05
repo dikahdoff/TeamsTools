@@ -6,6 +6,7 @@
 	"teamsTitle": "TeamsUtils",
 	"teamsBtn": "https://raw.githubusercontent.com/dikahdoff/TeamsUtils/main/resources/extension-logo-128.png",
 	"icon": "https://raw.githubusercontent.com/dikahdoff/TeamsUtils/main/resources/extension-logo-128.png",
+	"storeLink": null,
 	"latestVersion": "0.1",
 	"scripts": [
 		{
