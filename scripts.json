@@ -4,6 +4,7 @@
 	"link": "https://github.com/dikahdoff/TeamsUtils",
 	"teamsLink": "https://teams.microsoft.com",
 	"teamsTitle": "TeamsUtils",
+	"icon": "https://raw.githubusercontent.com/dikahdoff/TeamsUtils/main/resources/extension-logo-128.png",
 	"latestVersion": "0.1",
 	"scripts": [
 		{
