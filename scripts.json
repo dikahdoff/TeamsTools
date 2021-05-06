@@ -9,7 +9,7 @@
 	"storeLink": null,
 	"generatorLink": null,
 	"changelog": null,
-	"latestVersion": "0.1",
+	"latestVersion": "0.2",
 	"scripts": [
 		{
 			"name": "Auto Disconnect",
