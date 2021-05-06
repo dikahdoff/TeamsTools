@@ -14,6 +14,7 @@ async function popupTask() {
     var parsed = JSON.parse(httpGet("https://raw.githubusercontent.com/dikahdoff/TeamsUtils/main/scripts.json"));
     if(parsed != null) {
         document.getElementById("popup_title").innerText = parsed.title;
+        document.getElementById("popup_header_logo").src = parsed.icon;
         var subtitle = document.getElementById("popup_subtitle");
         var manifestData = chrome.runtime.getManifest();
         subtitle.innerText = parsed.subtitle + "\n(v" + ((manifestData.version == parsed.latestVersion) ? manifestData.version : manifestData.version + ", new version available: v" + parsed.latestVersion) + ")";
@@ -27,7 +28,7 @@ async function popupTask() {
 			tutorialTxt.innerHTML = "Use this menu to access the extension's functions.";
 			document.getElementById("popup_utils").appendChild(tutorialTxt);
 			tutorial.src = "tutorial.png";
-			tutorial.setAttribute("style", "width:85%");
+			tutorial.setAttribute("style", "width:100%");
 			document.getElementById("popup_utils").appendChild(tutorial);
         } else {
             var errorItem = document.createElement("h3");

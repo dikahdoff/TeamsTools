@@ -1,13 +1,12 @@
-// Runs when a https://teams.microsoft.com page is loaded.
 var parsed = null;
 parsed = JSON.parse(httpGet("https://raw.githubusercontent.com/dikahdoff/TeamsUtils/main/scripts.json"));
 //parsed = JSON.parse(httpGet("https://cdn.jsdelivr.net/gh/dikahdoff/TeamsUtils/scripts.json"));
 var manifestData = chrome.runtime.getManifest();
-//
+
 var dokicking = false;
 var dojoining = false;
 var dodisconnect = false;
-//
+
 var didswitch = false;
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -48,15 +47,32 @@ function isRunning(key) {
     }
 }
 function openGenerator() {
-    window.open(parsed.link);
+    window.open(parsed.generatorLink);
 }
 function openPage() {
     window.open(parsed.link);
 }
+function openChangelog() {
+    window.open(parsed.changelog);
+}
+function openStorePage() {
+    window.open(parsed.storeLink);
+}
 function workInProgress() {
     alert('Work in Progress');
 }
+function logToGui(logStr) {
+    var nowTime = new Date().toLocaleTimeString();
+    console.log("(" + nowTime + ") [TeamsUtils] " + logStr + "\nDownload this script: " + parsed.link + "");
+    var outputTxt = document.getElementById("control-input");
+    if(outputTxt != null) {
+        outputTxt.setAttribute("placeholder", "(" + nowTime + ") TeamsUtils> " + logStr);
+    } else {
+        console.warn("[TeamsUtils] Failed to log to GUI, because selected element was not found.");
+    }
+}
 function stopScript(key) {
+    logToGui("Stopped " + key + ".");
     switch (key) {
         case "AutoKick":
             cancelKicking();
@@ -68,6 +84,7 @@ function stopScript(key) {
             cancelDisconnect();
             break;
         default:
+            logToGui("[ERROR] Action isn't implemented in this version of the client. Please update the extension: " + parsed.link);
             alert("ERROR! Action isn't implemented in this version of the client. Please update the extension: " + parsed.link);
             break;
     }
@@ -98,7 +115,7 @@ function getSettings(key) {
             });
         }
     });
-    console.log(set);
+    logToGui("Running " + key + "...");
     switch (key) {
         case "AutoKick":
             kickingAction(set['kickDelay'], set['targetName']);
@@ -110,6 +127,7 @@ function getSettings(key) {
             disconnectAction(set['threshold'], set['delay']);
             break;
         default:
+            logToGui("[ERROR] Action isn't implemented in this version of the client. Please update the extension: " + parsed.link);
             alert("ERROR! Action isn't implemented in this version of the client. Please update the extension: " + parsed.link);
             break;
     }
@@ -126,7 +144,12 @@ function getInput(name, desc, type, def) {
                 case "int":
                     if(isNumeric(input)) {
                         taskNotDone = false;
-                        return parseInt(input);
+                        var out = parseInt(input);
+                        if(0 < out < 32766) {
+                            return out;
+                        } else {
+                            alert('Entered value is out of acceptable range.');
+                        }
                     } else {
                         alert('Entered value cannot be parsed as an integer.');
                     }
@@ -142,7 +165,11 @@ function getInput(name, desc, type, def) {
                     break;
                 case "str":
                     taskNotDone = false;
-                    return input;
+                    if(input.length < 512) {
+                        return input;
+                    } else {
+                        alert('Entered value is too long.');
+                    }
                     break;
                 default:
                     break;
@@ -150,6 +177,18 @@ function getInput(name, desc, type, def) {
         }
     }
 }
+// Title modifications
+var target = document.querySelector('title');
+var observer = new MutationObserver(function(mutations) {
+    mutations.forEach(function(mutation) {
+        if(document.title != null && !document.title.includes(parsed.teamsTitle)) {
+            document.title = document.title.replace("Microsoft Teams", parsed.teamsTitle);
+        }
+    });
+});
+var config = {
+    childList: true,
+};
 function openMenu() {
     if(document.getElementById("teamsutils-settings") == null) {
         var menu = document.createElement("div");
@@ -187,7 +226,7 @@ function openMenu() {
         title.setAttribute("ng-bind-html", "::sdc.teamsProductName");
         title.setAttribute("acc-role-dom", "menu-item");
         title.setAttribute("kb-item-role", "menuitem");
-        title.innerHTML = "Version: " + ((manifestData.version == parsed.latestVersion) ? manifestData.version : manifestData.version + ", new version available: v" + parsed.latestVersion);
+        title.innerHTML = "Version: " + ((manifestData.version == parsed.latestVersion) ? manifestData.version : manifestData.version + ", new version available: " + parsed.latestVersion);
         mainList.appendChild(title);
         // End of Create Title
         // Create Button
@@ -200,11 +239,45 @@ function openMenu() {
         var btnBtnElement = document.createElement("button");
         btnBtnElement.classList.add("ts-sym");
         btnBtnElement.setAttribute("ng-click", "sdc.gotoManage(); sdc.hide()");
-        btnBtnElement.innerText = parsed.link;
+        btnBtnElement.innerText = parsed.style.button + " Visit project link";
         btnBtnElement.addEventListener('click', openPage);
         btnElement.appendChild(btnBtnElement);
         mainList.appendChild(btnElement);
         // End of Create Button
+        if(parsed.storeLink != null) {
+            // Create Button
+            var btnElement = document.createElement("li");
+            btnElement.setAttribute("ng-if", "::(sdc.displaySettingsComponents && sdc.isFreemiumAdmin)");
+            btnElement.setAttribute("data-prevent-trigger-refocus", "true");
+            btnElement.setAttribute("acc-role-dom", "menu-item");
+            btnElement.setAttribute("role", "menuitem");
+            btnElement.setAttribute("kb-item", "");
+            var btnBtnElement = document.createElement("button");
+            btnBtnElement.classList.add("ts-sym");
+            btnBtnElement.setAttribute("ng-click", "sdc.gotoManage(); sdc.hide()");
+            btnBtnElement.innerText = parsed.style.button + " Visit store link";
+            btnBtnElement.addEventListener('click', openStorePage);
+            btnElement.appendChild(btnBtnElement);
+            mainList.appendChild(btnElement);
+            // End of Create Button
+        }
+        if(parsed.changelog != null) {
+            // Create Button
+            var btnElement = document.createElement("li");
+            btnElement.setAttribute("ng-if", "::(sdc.displaySettingsComponents && sdc.isFreemiumAdmin)");
+            btnElement.setAttribute("data-prevent-trigger-refocus", "true");
+            btnElement.setAttribute("acc-role-dom", "menu-item");
+            btnElement.setAttribute("role", "menuitem");
+            btnElement.setAttribute("kb-item", "");
+            var btnBtnElement = document.createElement("button");
+            btnBtnElement.classList.add("ts-sym");
+            btnBtnElement.setAttribute("ng-click", "sdc.gotoManage(); sdc.hide()");
+            btnBtnElement.innerText = parsed.style.button + " Changelog";
+            btnBtnElement.addEventListener('click', openChangelog);
+            btnElement.appendChild(btnBtnElement);
+            mainList.appendChild(btnElement);
+            // End of Create Button
+        }
         var splitterElement = document.createElement("li");
         splitterElement.setAttribute("ng-if","::sdc.displaySettingsComponents");
         splitterElement.classList.add("divider");
@@ -304,7 +377,7 @@ function openMenu() {
                     getSettings(element.key);
                 }
             });
-            btnBtnElement.innerText = (isRun ? '✔️' : '❌') + " " + element.name;
+            btnBtnElement.innerText = (isRun ? parsed.style.running : parsed.style.stopped) + " " + element.name;
             btnElement.appendChild(btnBtnElement);
             mainList.appendChild(btnElement);
             // End of Create Button
@@ -346,12 +419,33 @@ async function mainFunc() {
         if(bar.length > 0) {
             foundBar = true;
             console.log("[TeamsUtils] Injecting...");
-            var btn = document.createElement("a");
-            btn.innerText = "TeamsUtils Menu";
+            var btn = document.createElement("button");
+            btn.type = "button";
+            btn.classList.add("ts-sym", "me-profile");
             btn.href = "#";
+            /* Append image */
+            var userInfoBtn = document.createElement("div");
+            userInfoBtn.classList.add("user-information-button");
+            userInfoBtn.setAttribute("data-tid", "userInformation");
+            var profileImgParent = document.createElement("div");
+            profileImgParent.classList.add("profile-img-parent");
+            var profilePictureItem = document.createElement("profile-picture");
+            profilePictureItem.setAttribute("css-class", "user-picture");
+            var imgProfPic = document.createElement("img");
+            imgProfPic.src = parsed.teamsBtn;
+            imgProfPic.style = "object-fit: cover;";
+            profilePictureItem.appendChild(imgProfPic);
+            profileImgParent.appendChild(profilePictureItem);
+            userInfoBtn.appendChild(profileImgParent);
+            btn.appendChild(userInfoBtn);
+            /* End of append */
             btn.addEventListener('click', openMenu);
             bar[0].appendChild(btn);
+            // Remove annoying Desktop app download button
+            // Uncomment if you want to, it will not be uncommented in Production versions.
+            //document.getElementById("get-app-button").remove();
             console.log("[TeamsUtils] Injected.");
+            logToGui("Welcome!");
         }
         await sleep(100);
     }
@@ -372,7 +466,7 @@ async function kickingAction(kickDelay, targetName) {
         } catch (error) { /* Don't care */}
         if(kickDelay < 50) {
             dokicking = false;
-            console.error("The delay cannot be lower then 50ms, because Teams will freak out.\nDownload this script: https://github.com/dikahdoff/TeamsUtils");
+            logToGui("The delay cannot be lower then 50ms, because Teams will freak out. Please stop the script and set a higher delay.");
         } else {
             var elements = document.getElementsByTagName("calling-roster-section");
             for (var i = 0; i < elements.length; i++) {
@@ -409,7 +503,7 @@ async function kickingAction(kickDelay, targetName) {
                                             if(partInfo[l].classList.contains("name")) {
                                                 var cname = partInfo[l].children[0].innerHTML;
                                                 if(cname.toString().toLowerCase().toString().includes(targetName.toString().toLowerCase().toString())) {
-                                                    console.log("Found " + targetName + " as " + cname + ", kicking...\nDownload this script: https://github.com/dikahdoff/TeamsUtils");
+                                                    logToGui("Found " + targetName + " as " + cname + ", kicking...");
                                                     for (var m = 0; m < itemChildren.length; m++) {
                                                         if(itemChildren[m].classList.contains("stateActions") && itemChildren[m].classList.contains("hide-participant-state")) {
                                                             var btns = itemChildren[m].children;
@@ -423,11 +517,11 @@ async function kickingAction(kickDelay, targetName) {
                                                                         for(var o = 0; o < dropElements.length; o++) {
                                                                             if(dropElements[o].children[0].children[1].getAttribute("translate-once") == "calling_roster_remove_paticipant_popup_item") {
                                                                                 dropElements[o].children[0].click();
-                                                                                console.log(cname + " has been kicked...\nDownload this script: https://github.com/dikahdoff/TeamsUtils");
+                                                                                logToGui(cname + " has been kicked...");
                                                                             }
                                                                         }
                                                                     } else {
-                                                                        console.log("Please wait...\nDownload this script: https://github.com/dikahdoff/TeamsUtils");
+                                                                        console.log("Please wait...\nDownload this script: " + parsed.link + "");
                                                                     }
                                                                 }
                                                             }
@@ -457,7 +551,7 @@ async function joiningAction(joinDelay, joinWait, switchChannel, switchTo, switc
     dojoining = true;
     while(dojoining) {
         if(switchChannel && !didswitch) {
-            console.warn("Switching to " + switchTo + " before fetching...\nDownload this script: https://github.com/dikahdoff/TeamsUtils");
+            console.warn("Switching to " + switchTo + " before fetching...\nDownload this script: " + parsed.link + "");
             var teams = document.getElementsByClassName("app-left-rail-width");
             if(teams.length > 0) {
                 teams = teams[0].children[0].children[0].children[1].children;
@@ -466,10 +560,9 @@ async function joiningAction(joinDelay, joinWait, switchChannel, switchTo, switc
                         if(teams[i].classList.contains("team")) {
                             var cTeamName = teams[i].children[0].children[0].children[0].children[1].children[0].children[0].innerHTML;
                             if(cTeamName.toLowerCase().contains(switchTo.toLowerCase())) {
-                                console.log("Found " + switchTo + " team, opening if necessary...\nDownload this script: https://github.com/dikahdoff/TeamsUtils");
+                                logToGui("Found " + switchTo + " team, opening if necessary...");
                                 // Check if teams is collapsed, if it is, open it.
                                 if(teams[i].getAttribute("aria-expanded") == "false") {
-                                    console.log(teams[i]);
                                     teams[i].children[0].children[0].click();
                                 }
                                 await sleep(50);
@@ -478,7 +571,7 @@ async function joiningAction(joinDelay, joinWait, switchChannel, switchTo, switc
                                 for(var j = 0; j < channels.length; j++) {
                                     var channelName = channels[j].children[0].children[0].children[0].innerHTML;
                                     if(channelName.toLowerCase().contains(switchToChannel.toLowerCase())) {
-                                        console.log("Found " + switchToChannel + " channel, opening if necessary...\nDownload this script: https://github.com/dikahdoff/TeamsUtils");
+                                        logToGui("Found " + switchToChannel + " channel, opening if necessary...");
                                         channels[j].children[0].click();
                                         didswitch = true;
                                     }
@@ -487,23 +580,23 @@ async function joiningAction(joinDelay, joinWait, switchChannel, switchTo, switc
                         }
                     }
                 } else {
-                    console.error("You don't have any teams to join to.\nDownload this script: https://github.com/dikahdoff/TeamsUtils");
+                    logToGui("[ERROR] You don't have any teams to join to.");
                 }
             } else {
-                console.error("Couldn't find teams list.\nDownload this script: https://github.com/dikahdoff/TeamsUtils");
+                logToGui("[ERROR] Couldn't find teams list.");
             }
             await sleep(joinDelay);
         }
-        console.log("Fetching meetings...\nDownload this script: https://github.com/dikahdoff/TeamsUtils");
+        logToGui("Fetching meetings...");
         // Get meeting button
         var element = document.getElementsByClassName("ts-sym ts-btn ts-btn-primary inset-border icons-call-jump-in ts-calling-join-button app-title-bar-button app-icons-fill-hover call-jump-in");
         if(element.length > 0) {
             element = element[0];
             // Validated, a meeting is running and the join button is available.
             // Wait for 'joinWait' and then click the join button
-            console.log("Found a meeting, joining in " + joinWait + "ms\nDownload this script: https://github.com/dikahdoff/TeamsUtils");
+            logToGui("Found a meeting, joining in " + joinWait + "ms");
             await sleep(joinWait);
-            console.log("Joining...\nDownload this script: https://github.com/dikahdoff/TeamsUtils");
+            logToGui("Joining...");
             element.click();
             await sleep(100);
             // Check if the continue without camera or audio dialog opens
@@ -511,7 +604,7 @@ async function joiningAction(joinDelay, joinWait, switchChannel, switchTo, switc
             if(withoutBtn.length > 0) {
                 // If it did, close it.
                 withoutBtn[0].click();
-                console.warn("Closed warning box.\nDownload this script: https://github.com/dikahdoff/TeamsUtils");
+                logToGui("Closed warning box.");
             }
             await sleep(100);
             var toggleMic = document.getElementById("preJoinAudioButton");
@@ -520,7 +613,7 @@ async function joiningAction(joinDelay, joinWait, switchChannel, switchTo, switc
                 // Check if mic is on, then turn off if it is.
                 if(toggleMic.getAttribute("telemetry-outcome") == "30") {
                     toggleMic.children[0].children[0].click();
-                    console.warn("Turned microphone off.\nDownload this script: https://github.com/dikahdoff/TeamsUtils");
+                    logToGui("Turned microphone off.");
                 }
             }
             await sleep(50);
@@ -533,7 +626,7 @@ async function joiningAction(joinDelay, joinWait, switchChannel, switchTo, switc
                         // Check if camera is on, then turn off if it is.
                         if(toggleCam.getAttribute("telemetry-outcome") == "26") {
                             toggleCam.children[0].children[0].click();
-                            console.warn("Turned camera off.\nDownload this script: https://github.com/dikahdoff/TeamsUtils");
+                            logToGui("Turned camera off.");
                         }
                     }
                 }
@@ -544,9 +637,9 @@ async function joiningAction(joinDelay, joinWait, switchChannel, switchTo, switc
             if(joinBtn.length > 0) {
                 joinBtn[0].click();
                 dojoining = false;
-                console.log("Joined.\nDownload this script: https://github.com/dikahdoff/TeamsUtils");
+                logToGui("Joined.");
             } else {
-                console.error("Failed to join meeting, can't find the join button.\nDownload this script: https://github.com/dikahdoff/TeamsUtils");
+                logToGui("[ERROR] Failed to join meeting, can't find the join button.");
             }
         }
         // Wait
@@ -581,12 +674,13 @@ async function disconnectAction(disconnectThreshold, disconnectDelay) {
             }
         }
         // Log current users into the console window.
-        console.log("Users in meeting: " + sum + "\nDownload this script: https://github.com/dikahdoff/TeamsUtils");
+        logToGui("Users in meeting: " + sum);
+        console.log();
         if(sum <= disconnectThreshold && sum != 0) {
             // Disconnect because the sum is lower then the set disconnectThreshold
             document.getElementById("hangup-button").click();
             dodisconnect = false;
-            console.warn("disconnectThreshold is " + disconnectThreshold + ", disconnecting at " + sum + " attendees...\nDownload this script: https://github.com/dikahdoff/TeamsUtils");
+            logToGui("Disconnect Threshold is " + disconnectThreshold + ", disconnecting at " + sum + " attendees...");
         }
         // Wait
         await sleep(disconnectDelay);
@@ -596,3 +690,4 @@ async function cancelDisconnect() {
     // Stop the script
     dodisconnect = false;
 }
+observer.observe(target, config);

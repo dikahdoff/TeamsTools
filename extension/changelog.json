@@ -1,0 +1,24 @@
+{
+	"0.1": {
+		"name": "Beta 0.1",
+		"date": 1619987160,
+		"maintainer": "https://github.com/dikahdoff",
+		"release": "https://github.com/dikahdoff/TeamsUtils/releases/tag/ext-0.1",
+		"features": [
+			"Initial Beta Release"
+		]
+	},
+	"0.2": {
+		"name": "Beta 0.2",
+		"date": 0,
+		"maintainer": "https://github.com/dikahdoff",
+		"release": "https://github.com/dikahdoff/TeamsUtils/releases/tag/ext-0.2",
+		"features": [
+			"Moved more stuff over to scripts.json to make the extension more dynamic",
+			"Added limit checking to settings variables when starting a script",
+			"Added logging to GUI without needing to open the browser inspector",
+			"Prettier UX/UI",
+			"Fixed some translation inconsistencies"
+		]
+	}
+}
