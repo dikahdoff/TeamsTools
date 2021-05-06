@@ -7,7 +7,7 @@
 	  "email": "dikahdoff@gmail.com"
 	}],
 	"homepage_url": "https://github.com/dikahdoff/TeamsUtils",
-	"description": "Some Microsoft Teams utilities/scripts",
+	"description": "Automating Microsoft Teams in a useful way.",
 	"icons": { "64": "icon-64.png",
 			   "128": "icon-128.png",
 		       "1200": "icon-full.png" },
@@ -16,8 +16,7 @@
 		"default_popup": "popup.html"
 	},
 	"permissions": [
-		"tabs",
-		"scripting"
+		"tabs"
 	],
 	"host_permissions":["*://teams.microsoft.com/*"],
 	"content_scripts": [
