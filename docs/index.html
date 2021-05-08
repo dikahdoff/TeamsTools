@@ -9,6 +9,7 @@
         <h3>Table of Contents</h3>
         <li><a href="#about">About</a></li>
         <li><a href="#extension">How to install the extension</a></li>
+        <li><a href="#changelog">Changelog</a></li>
     </ul><br />
     <img style="width:256px;" src="https://file.coffee/u/wgFS3dTinu.png" />
     <div id="about">
@@ -19,4 +20,58 @@
         <h3>How to install the extension</h3>
         <p>The installation tutorial per browser can be found on the <a href="https://github.com/dikahdoff/TeamsUtils/wiki/Extension-installation-guide" target="_blank">GitHub Wiki</a>.</p>
     </div><br />
+    <div id="changelog">
+        <h3>Changelog</h3>
+        <p id="changelog-content">Loading...</p>
+    </div><br />
+    <script>
+        function httpGet(theUrl)
+        {
+            var xmlHttp = new XMLHttpRequest();
+            xmlHttp.open( "GET", theUrl, false );
+            xmlHttp.send( null );
+            return xmlHttp.responseText;
+        }
+        // Reading from https://raw.githubusercontent.com/dikahdoff/TeamsUtils/main/extension/changelog.json
+        var parsed = null;
+        parsed = JSON.parse(httpGet("https://raw.githubusercontent.com/dikahdoff/TeamsUtils/main/extension/changelog.json"));
+        console.log(parsed);
+        var changelogContent = document.getElementById("changelog-content");
+        if(changelogContent != null) {
+            var listElement = document.createElement("ul");
+            if(parsed != null) {
+                Object.entries(parsed).slice().reverse().forEach(element => {
+                    const [key, value] = element;
+                    var ver = document.createElement("li");
+                    ver.innerHTML = "<h4>" + key + "</h4>";
+                    listElement.appendChild(ver);
+                    var versionElement = document.createElement("ul");
+                    var verName = document.createElement("li");
+                    var verDl = document.createElement("li");
+                    var featureList = document.createElement("ul");
+                    verName.innerHTML = "<b>" + value.name + "</b> (" + value.date + ")";
+                    verDl.innerHTML = "<b>Download:</b> <a target='_blank' href='" + value.release + "'>" + value.release + "</a>";
+                    Object.entries(value.features).forEach(featureElem => {
+                        const [fkey, fvalue] = featureElem;
+                        var feature = document.createElement("li");
+                        feature.innerText = fvalue;
+                        featureList.appendChild(feature);
+                    });
+                    versionElement.appendChild(verName);
+                    versionElement.appendChild(verDl);
+                    var ftitle = document.createElement("li");
+                    ftitle.innerHTML = "<b>" + "Changes:" + "</b>";
+                    versionElement.appendChild(ftitle);
+                    versionElement.appendChild(featureList);
+                    listElement.appendChild(versionElement);
+                });
+            } else {
+                console.error("Couldn't load changelog, can't connect to GitHub");
+            }
+            changelogContent.innerHTML = '';
+            changelogContent.appendChild(listElement);
+        } else {
+            console.error("Couldn't load changelog, can't find the changelog-content element");
+        }
+    </script>
 </body>

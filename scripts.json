@@ -8,7 +8,7 @@
 	"icon": "https://raw.githubusercontent.com/dikahdoff/TeamsUtils/main/resources/extension-logo-128.png",
 	"storeLink": "https://chrome.google.com/webstore/detail/teamsutils/lofcnmcfagedndhofljcijmgoilkghkm",
 	"generatorLink": null,
-	"changelog": null,
+	"changelog": "https://dikahdoff.github.io/TeamsUtils/#changelog",
 	"latestVersion": "0.2",
 	"scripts": [
 		{
