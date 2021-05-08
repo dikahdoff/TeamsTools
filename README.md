@@ -2,7 +2,8 @@
 ![header](https://raw.githubusercontent.com/dikahdoff/TeamsUtils/main/resources/header.png)
 
 ## Browser Extension (for easier use)
-Visit the [Wiki page](https://github.com/dikahdoff/TeamsUtils/wiki/Extension-installation-guide) for installation instructions
+- Install from: [Chrome Webstore (for Brave/Edge/Chrome or any Chromium based browsers)](https://chrome.google.com/webstore/detail/teamsutils/lofcnmcfagedndhofljcijmgoilkghkm)
+- Visit the [Wiki page](https://github.com/dikahdoff/TeamsUtils/wiki/Extension-installation-guide) for installation instructions
 
 ## Scripts
 - [AutoDisconnect](scripts/AutoDisconnect.js)
