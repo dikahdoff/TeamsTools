@@ -49,7 +49,7 @@
                     var verName = document.createElement("li");
                     var verDl = document.createElement("li");
                     var featureList = document.createElement("ul");
-                    verName.innerHTML = "<b>" + value.name + "</b> (" + value.date + ")";
+                    verName.innerHTML = "<b>" + value.name + "</b> (" + new Date(value.date * 1000) + ")";
                     verDl.innerHTML = "<b>Download:</b> <a target='_blank' href='" + value.release + "'>" + value.release + "</a>";
                     Object.entries(value.features).forEach(featureElem => {
                         const [fkey, fvalue] = featureElem;
