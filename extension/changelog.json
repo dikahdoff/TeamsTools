@@ -20,5 +20,15 @@
 			"Prettier UX/UI",
 			"Fixed some translation inconsistencies"
 		]
+	},
+	"0.3": {
+		"name": "Beta 0.3",
+		"date": 1620645480,
+		"maintainer": "https://github.com/dikahdoff",
+		"release": "https://github.com/dikahdoff/TeamsUtils/releases/tag/ext-0.3",
+		"features": [
+			"Fixed error checking on input boxes",
+			"Updated some resources"
+		]
 	}
 }
