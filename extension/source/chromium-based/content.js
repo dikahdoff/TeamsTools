@@ -142,10 +142,10 @@ function getInput(name, desc, type, def) {
         } else {
             switch (type) {
                 case "int":
-                    if(isNumeric(input)) {
-                        taskNotDone = false;
+                    if(isNumeric(input)) {                       
                         var out = parseInt(input);
                         if(0 < out < 32766) {
+                            taskNotDone = false;
                             return out;
                         } else {
                             alert('Entered value is out of acceptable range.');
@@ -164,11 +164,20 @@ function getInput(name, desc, type, def) {
                     }
                     break;
                 case "str":
-                    taskNotDone = false;
                     if(input.length < 512) {
+                        taskNotDone = false;
                         return input;
                     } else {
                         alert('Entered value is too long.');
+                    }
+                    break;
+                case "array_str":
+                    var parsedArrStr = input.split(";");
+                    if(parsedArrStr != null) {
+                        taskNotDone = false;
+                        return parsedArrStr;
+                    } else {
+                        alert("Entered value can't be parsed as a String Array.");
                     }
                     break;
                 default:
@@ -183,6 +192,9 @@ var observer = new MutationObserver(function(mutations) {
     mutations.forEach(function(mutation) {
         if(document.title != null && !document.title.includes(parsed.teamsTitle)) {
             document.title = document.title.replace("Microsoft Teams", parsed.teamsTitle);
+            try {
+                document.getElementsByClassName("teams-title")[0].innerText = "TeamsUtils";
+            } catch (error) { /* Cope */ }
         }
     });
 });
