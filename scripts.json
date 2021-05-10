@@ -9,7 +9,7 @@
 	"storeLink": "https://chrome.google.com/webstore/detail/teamsutils/lofcnmcfagedndhofljcijmgoilkghkm",
 	"generatorLink": null,
 	"changelog": "https://dikahdoff.github.io/TeamsUtils/#changelog",
-	"latestVersion": "0.2",
+	"latestVersion": "0.3",
 	"scripts": [
 		{
 			"name": "Auto Disconnect",
