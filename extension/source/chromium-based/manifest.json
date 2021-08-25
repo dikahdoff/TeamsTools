@@ -1,7 +1,7 @@
 {
 	"manifest_version": 3,
 	"name": "TeamsUtils",
-	"version": "0.3",
+	"version": "0.4",
 	"author": [{
 	  "name": "dikahdoff",
 	  "email": "dikahdoff@gmail.com"
@@ -18,11 +18,12 @@
 	"permissions": [
 		"tabs"
 	],
-	"host_permissions":["*://teams.microsoft.com/*"],
+	"host_permissions":["*://teams.microsoft.com/*", "*://teams.live.com/*"],
 	"content_scripts": [
 		{
 			"matches": [
-				"*://teams.microsoft.com/*"
+				"*://teams.microsoft.com/*",
+				"*://teams.live.com/*"
 			],
 			"js": [
 				"content.js"
