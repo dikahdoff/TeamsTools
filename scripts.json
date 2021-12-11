@@ -1,15 +1,17 @@
 {
-	"title": "TeamsUtils (by dikahdoff)",
+	"title": "TeamsTools (by dikahdoff)",
 	"subtitle": "Download at https://github.com/dikahdoff/TeamsUtils",
 	"link": "https://github.com/dikahdoff/TeamsUtils",
+	"donationLink": "https://ko-fi.com/dikahdoff",
+	"prefix": "[TeamsTools] ",
 	"teamsLink": "https://teams.microsoft.com",
-	"teamsTitle": "TeamsUtils",
+	"teamsTitle": "TeamsTools",
 	"teamsBtn": "https://raw.githubusercontent.com/dikahdoff/TeamsUtils/main/resources/extension-btn-512.png",
 	"icon": "https://raw.githubusercontent.com/dikahdoff/TeamsUtils/main/resources/extension-logo-128.png",
 	"storeLink": "https://chrome.google.com/webstore/detail/teamsutils/lofcnmcfagedndhofljcijmgoilkghkm",
 	"generatorLink": null,
 	"changelog": "https://dikahdoff.github.io/TeamsUtils/#changelog",
-	"latestVersion": "0.3",
+	"latestVersion": "0.4",
 	"characterLimit": 50,
 	"scripts": [
 		{
@@ -143,8 +145,8 @@
 		}
 	],
 	"style": {
-		"running": "✔️",
-		"stopped": "❌",
+		"running": "<input type=\"checkbox\" onclick=\"this.checked=!this.checked;\" checked>️",
+		"stopped": "<input type=\"checkbox\" onclick=\"this.checked=!this.checked;\">️",
 		"error": "error",
 		"button": "> "
 	}

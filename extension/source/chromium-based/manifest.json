@@ -16,7 +16,7 @@
 		"default_popup": "popup.html"
 	},
 	"permissions": [
-		"tabs"
+		"tabs", "storage"
 	],
 	"host_permissions":["*://teams.microsoft.com/*", "*://teams.live.com/*"],
 	"content_scripts": [

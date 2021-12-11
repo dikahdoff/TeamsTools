@@ -1,6 +1,13 @@
 var parsed = null;
-parsed = JSON.parse(httpGet("https://raw.githubusercontent.com/dikahdoff/TeamsUtils/main/scripts.json"));
-//parsed = JSON.parse(httpGet("https://cdn.jsdelivr.net/gh/dikahdoff/TeamsUtils/scripts.json"));
+parsed = JSON.parse(httpGet("https://raw.githack.com/dikahdoff/temp/main/scripts.json"));
+
+var settings = {}
+var defaultSettings = {
+    firstSetup: false,
+    doSeeMore: true,
+    doDarkMode: true
+};
+
 var manifestData = chrome.runtime.getManifest();
 
 var dokicking = false;
@@ -18,6 +25,40 @@ function httpGet(theUrl)
     xmlHttp.send( null );
     return xmlHttp.responseText;
 }
+function addStyle(styleString) {
+    const style = document.createElement('style');
+    style.textContent = styleString;
+    document.head.append(style);
+}
+function manageSettings(write = false, settingsJson = settings) {
+    if(write) {
+        value = JSON.stringify(settingsJson);
+        try {
+            chrome.storage.sync.set({tsettings: value}, function() {
+                return true;
+            });
+        } catch (error) {
+            console.warn(error);
+            return false;
+        }
+    } else {
+        try {
+            chrome.storage.sync.get(['tsettings'], function(result) {
+                settings = JSON.parse(result.tsettings);
+                if(settings.doDarkMode) {
+                    doDarkMode();
+                }
+                if(settings.doSeeMore) {
+                    seeMoreAction();
+                }
+                return true;
+            });
+        } catch (error) {
+            console.warn(error);
+            return manageSettings(true, defaultSettings);
+        }
+    }
+}
 function isNumeric(str) {
     if (typeof str != "string") return false
     return !isNaN(str) &&
@@ -34,20 +75,23 @@ function isRunning(key) {
     switch (key) {
         case "AutoKick":
             return dokicking;
-            break;
         case "AutoJoinMeeting":
             return dojoining;
-            break;
         case "AutoDisconnect":
             return dodisconnect;
-            break;
+        case "AutoSeeMore":
+            return settings.doSeeMore;
+        case "DoDarkMode":
+            return settings.doDarkMode;
         default:
             return null;
-            break;
     }
 }
 function openGenerator() {
     window.open(parsed.generatorLink);
+}
+function openDonation() {
+    window.open(parsed.donationLink);
 }
 function openPage() {
     window.open(parsed.link);
@@ -61,18 +105,20 @@ function openStorePage() {
 function workInProgress() {
     alert('Work in Progress');
 }
-function logToGui(logStr) {
+function log(logStr, gui = true) {
     var nowTime = new Date().toLocaleTimeString();
-    console.log("(" + nowTime + ") [TeamsUtils] " + logStr + "\nDownload this script: " + parsed.link + "");
-    var outputTxt = document.getElementById("control-input");
-    if(outputTxt != null) {
-        outputTxt.setAttribute("placeholder", "(" + nowTime + ") TeamsUtils> " + logStr);
-    } else {
-        console.warn("[TeamsUtils] Failed to log to GUI, because selected element was not found.");
+    console.log("(" + nowTime + ") " + parsed.prefix + "" + logStr + "\nDownload this script: " + parsed.link + "");
+    if(gui) {
+        var outputTxt = document.getElementById("control-input");
+        if(outputTxt != null) {
+            outputTxt.setAttribute("placeholder", "(" + nowTime + ") " + parsed.teamsTitle + "> " + logStr);
+        } else {
+            console.warn(parsed.prefix + "Failed to log to GUI, because selected element was not found.");
+        }
     }
 }
 function stopScript(key) {
-    logToGui("Stopped " + key + ".");
+    log("Stopped " + key + ".");
     switch (key) {
         case "AutoKick":
             cancelKicking();
@@ -83,8 +129,14 @@ function stopScript(key) {
         case "AutoDisconnect":
             cancelDisconnect();
             break;
+        case "AutoSeeMore":
+            cancelSeeMore();
+            break;
+        case "DoDarkMode":
+            cancelDarkMode();
+            break;
         default:
-            logToGui("[ERROR] Action isn't implemented in this version of the client. Please update the extension: " + parsed.link);
+            log("[ERROR] Action isn't implemented in this version of the client. Please update the extension: " + parsed.link);
             alert("ERROR! Action isn't implemented in this version of the client. Please update the extension: " + parsed.link);
             break;
     }
@@ -115,7 +167,7 @@ function getSettings(key) {
             });
         }
     });
-    logToGui("Running " + key + "...");
+    log("Running " + key + "...");
     switch (key) {
         case "AutoKick":
             kickingAction(set['kickDelay'], set['targetName']);
@@ -126,8 +178,14 @@ function getSettings(key) {
         case "AutoDisconnect":
             disconnectAction(set['threshold'], set['delay']);
             break;
+        case "AutoSeeMore":
+            seeMoreAction(100);
+            break;
+        case "DoDarkMode":
+            doDarkMode();
+            break;
         default:
-            logToGui("[ERROR] Action isn't implemented in this version of the client. Please update the extension: " + parsed.link);
+            log("[ERROR] Action isn't implemented in this version of the client. Please update the extension: " + parsed.link);
             alert("ERROR! Action isn't implemented in this version of the client. Please update the extension: " + parsed.link);
             break;
     }
@@ -193,7 +251,7 @@ var observer = new MutationObserver(function(mutations) {
         if(document.title != null && !document.title.includes(parsed.teamsTitle)) {
             document.title = document.title.replace("Microsoft Teams", parsed.teamsTitle);
             try {
-                document.getElementsByClassName("teams-title")[0].innerText = "TeamsUtils";
+                document.getElementsByClassName("teams-title")[0].innerText = parsed.teamsTitle;
             } catch (error) { /* Cope */ }
         }
     });
@@ -241,6 +299,24 @@ function openMenu() {
         title.innerHTML = "Version: " + ((manifestData.version == parsed.latestVersion) ? manifestData.version : manifestData.version + ", new version available: " + parsed.latestVersion);
         mainList.appendChild(title);
         // End of Create Title
+        if(parsed.donationLink != null) {
+            // Create Button
+            var btnElement = document.createElement("li");
+            btnElement.setAttribute("ng-if", "::(sdc.displaySettingsComponents && sdc.isFreemiumAdmin)");
+            btnElement.setAttribute("data-prevent-trigger-refocus", "true");
+            btnElement.setAttribute("acc-role-dom", "menu-item");
+            btnElement.setAttribute("role", "menuitem");
+            btnElement.setAttribute("kb-item", "");
+            var btnBtnElement = document.createElement("button");
+            btnBtnElement.classList.add("ts-sym", "tutils-donation");
+            btnBtnElement.id = "tutils-donation";
+            btnBtnElement.setAttribute("ng-click", "sdc.gotoManage(); sdc.hide()");
+            btnBtnElement.innerText = parsed.style.button + " Help fund the project!";
+            btnBtnElement.addEventListener('click', openDonation);
+            btnElement.appendChild(btnBtnElement);
+            mainList.appendChild(btnElement);
+            // End of Create Button
+        }
         // Create Button
         var btnElement = document.createElement("li");
         btnElement.setAttribute("ng-if", "::(sdc.displaySettingsComponents && sdc.isFreemiumAdmin)");
@@ -295,8 +371,8 @@ function openMenu() {
         splitterElement.classList.add("divider");
         splitterElement.setAttribute("acc-role-dom", "menu-separator");
         mainList.appendChild(splitterElement);
-        /*
-        !!! NOT IMPLEMENTED YET, DO NOT UNCOMMENT !!!
+
+        limit = parsed.characterLimit;
         // Create title
         title = document.createElement("div");
         title.classList.add("settings-dropdown-header");
@@ -304,72 +380,15 @@ function openMenu() {
         title.setAttribute("ng-bind-html", "::sdc.teamsProductName");
         title.setAttribute("acc-role-dom", "menu-item");
         title.setAttribute("kb-item-role", "menuitem");
-        title.innerHTML = "Automatic execution";
+        title.innerHTML = "Settings";
         mainList.appendChild(title);
         // End of Create Title
-        // Create Button
-        var btnElement = document.createElement("li");
-        btnElement.setAttribute("ng-if", "::(sdc.displaySettingsComponents && sdc.isFreemiumAdmin)");
-        btnElement.setAttribute("data-prevent-trigger-refocus", "true");
-        btnElement.setAttribute("acc-role-dom", "menu-item");
-        btnElement.setAttribute("role", "menuitem");
-        btnElement.setAttribute("kb-item", "");
-        var btnBtnElement = document.createElement("button");
-        btnBtnElement.classList.add("ts-sym");
-        btnBtnElement.setAttribute("ng-click", "sdc.gotoManage(); sdc.hide()");
-        btnBtnElement.innerText = "Create automation script";
-        btnBtnElement.addEventListener('click', openGenerator);
-        btnElement.appendChild(btnBtnElement);
-        mainList.appendChild(btnElement);
-        // End of Create Button
-        // Create Button
-        var btnElement = document.createElement("li");
-        btnElement.setAttribute("ng-if", "::(sdc.displaySettingsComponents && sdc.isFreemiumAdmin)");
-        btnElement.setAttribute("data-prevent-trigger-refocus", "true");
-        btnElement.setAttribute("acc-role-dom", "menu-item");
-        btnElement.setAttribute("role", "menuitem");
-        btnElement.setAttribute("kb-item", "");
-        var btnBtnElement = document.createElement("button");
-        btnBtnElement.classList.add("ts-sym");
-        btnBtnElement.setAttribute("ng-click", "sdc.gotoManage(); sdc.hide()");
-        btnBtnElement.innerText = "Import automation script";
-        btnBtnElement.addEventListener('click', workInProgress);
-        btnElement.appendChild(btnBtnElement);
-        mainList.appendChild(btnElement);
-        // End of Create Button
-        // Create Button
-        var btnElement = document.createElement("li");
-        btnElement.setAttribute("ng-if", "::(sdc.displaySettingsComponents && sdc.isFreemiumAdmin)");
-        btnElement.setAttribute("data-prevent-trigger-refocus", "true");
-        btnElement.setAttribute("acc-role-dom", "menu-item");
-        btnElement.setAttribute("role", "menuitem");
-        btnElement.setAttribute("kb-item", "");
-        var btnBtnElement = document.createElement("button");
-        btnBtnElement.classList.add("ts-sym");
-        btnBtnElement.setAttribute("ng-click", "sdc.gotoManage(); sdc.hide()");
-        btnBtnElement.innerText = "Start script";
-        btnBtnElement.addEventListener('click', workInProgress);
-        btnElement.appendChild(btnBtnElement);
-        mainList.appendChild(btnElement);
-        // End of Create Button
-        splitterElement = document.createElement("li");
-        splitterElement.setAttribute("ng-if","::sdc.displaySettingsComponents");
-        splitterElement.classList.add("divider");
-        splitterElement.setAttribute("acc-role-dom", "menu-separator");
-        mainList.appendChild(splitterElement);
-        */
-        // Create title
-        title = document.createElement("div");
-        title.classList.add("settings-dropdown-header");
-        title.setAttribute("data-tid", "product-name-and-type");
-        title.setAttribute("ng-bind-html", "::sdc.teamsProductName");
-        title.setAttribute("acc-role-dom", "menu-item");
-        title.setAttribute("kb-item-role", "menuitem");
-        title.innerHTML = "Manual execution";
-        mainList.appendChild(title);
-        // End of Create Title
-        var scripts = parsed.scripts;
-        scripts.forEach(element => {
+        var settings = parsed.settings;
+        settings.forEach(element => {
+            description = element.description;
+            if(description.length > limit) {
+                description = description.slice(0,limit) + "...";
+            }
             // Create Button
             var btnElement = document.createElement("li");
             btnElement.setAttribute("ng-if", "::(sdc.displaySettingsComponents && sdc.isFreemiumAdmin)");
@@ -377,6 +396,7 @@ function openMenu() {
             btnElement.setAttribute("acc-role-dom", "menu-item");
             btnElement.setAttribute("role", "menuitem");
             btnElement.setAttribute("kb-item", "");
+            btnElement.title = element.description;
             var btnBtnElement = document.createElement("button");
             btnBtnElement.classList.add("ts-sym");
             btnBtnElement.setAttribute("ng-click", "sdc.gotoManage(); sdc.hide()");
@@ -389,8 +409,72 @@ function openMenu() {
                     getSettings(element.key);
                 }
             });
-            btnBtnElement.innerText = (isRun ? parsed.style.running : parsed.style.stopped) + " " + element.name;
+            btnBtnElement.innerHTML = (isRun ? parsed.style.running : parsed.style.stopped) + " " + element.name;
             btnElement.appendChild(btnBtnElement);
+            var btnDescElement = document.createElement("div");
+            btnDescElement.classList.add("settings-dropdown-header");
+            btnDescElement.setAttribute("data-tid", "product-name-and-type");
+            btnDescElement.setAttribute("ng-bind-html", "::sdc.teamsProductName");
+            btnDescElement.setAttribute("acc-role-dom", "menu-item");
+            btnDescElement.setAttribute("kb-item-role", "menuitem");
+            btnDescElement.setAttribute("style", "font-size: 10px;");
+            btnDescElement.innerHTML = description;
+            btnElement.appendChild(btnDescElement);
+            mainList.appendChild(btnElement);
+            // End of Create Button
+        });
+        var splitterElement = document.createElement("li");
+        splitterElement.setAttribute("ng-if","::sdc.displaySettingsComponents");
+        splitterElement.classList.add("divider");
+        splitterElement.setAttribute("acc-role-dom", "menu-separator");
+        mainList.appendChild(splitterElement);
+        // Create title
+        title = document.createElement("div");
+        title.classList.add("settings-dropdown-header");
+        title.setAttribute("data-tid", "product-name-and-type");
+        title.setAttribute("ng-bind-html", "::sdc.teamsProductName");
+        title.setAttribute("acc-role-dom", "menu-item");
+        title.setAttribute("kb-item-role", "menuitem");
+        title.innerHTML = "Toggles";
+        mainList.appendChild(title);
+        // End of Create Title
+        var scripts = parsed.scripts;
+        scripts.forEach(element => {
+            description = element.description;
+            if(description.length > limit) {
+                description = description.slice(0,limit) + "...";
+            }
+            // Create Button
+            var btnElement = document.createElement("li");
+            btnElement.setAttribute("ng-if", "::(sdc.displaySettingsComponents && sdc.isFreemiumAdmin)");
+            btnElement.setAttribute("data-prevent-trigger-refocus", "true");
+            btnElement.setAttribute("acc-role-dom", "menu-item");
+            btnElement.setAttribute("role", "menuitem");
+            btnElement.setAttribute("kb-item", "");
+            btnElement.title = element.description;
+            var btnBtnElement = document.createElement("button");
+            btnBtnElement.classList.add("ts-sym");
+            btnBtnElement.setAttribute("ng-click", "sdc.gotoManage(); sdc.hide()");
+            btnBtnElement.id = "triggerbtn-" + element.key;
+            var isRun = (isRunning(element.key));
+            btnBtnElement.addEventListener('click', function (){
+                if(isRun) {
+                    stopScript(element.key);
+                } else {
+                    getSettings(element.key);
+                }
+            });
+            btnBtnElement.innerHTML = (isRun ? parsed.style.running : parsed.style.stopped) + " " + element.name;
+            btnElement.appendChild(btnBtnElement);
+            var btnDescElement = document.createElement("div");
+            btnDescElement.classList.add("settings-dropdown-header");
+            btnDescElement.setAttribute("data-tid", "product-name-and-type");
+            btnDescElement.setAttribute("ng-bind-html", "::sdc.teamsProductName");
+            btnDescElement.setAttribute("acc-role-dom", "menu-item");
+            btnDescElement.setAttribute("kb-item-role", "menuitem");
+            btnDescElement.setAttribute("style", "font-size: 10px;");
+            btnDescElement.innerHTML = description;
+            btnElement.appendChild(btnDescElement);
             mainList.appendChild(btnElement);
             // End of Create Button
         });
@@ -420,17 +504,82 @@ function openMenu() {
 function closeMenu() {
     document.getElementById("teamsutils-settings").remove();
 }
-console.log("[TeamsUtils] Starting...");
-window.addEventListener ("load", mainFunc, false);
+log("Starting...", false);
+log("Patching Dark Mode...", false);
+addStyle(`body {
+    background-color: black;
+    color: white;
+}
+.app-loading {
+    background-color: black;
+    color: white;
+}`);
+try {
+    chrome.storage.sync.get(['tsettings'], function(result) {
+        settings = JSON.parse(result.tsettings);
+        if(settings.doDarkMode) {
+            doDarkMode();
+        }
+        if(settings.doSeeMore) {
+            seeMoreAction();
+        }
+        init();
+    });
+} catch (error) {
+    value = JSON.stringify(defaultSettings);
+    try {
+        chrome.storage.sync.set({tsettings: value}, function() {
+            settings = defaultSettings;
+            init();
+        });
+    } catch (error) {
+        console.warn(error);
+        settings = defaultSettings;
+        init();
+    }
+}
+
+function init() {
+    log("Started.",false);
+    log("Initializing...",false);
+    addStyle(`#tutils-donation {
+        font-size: 16px;
+        font-weight: bold;
+        background: linear-gradient(to right, #6666ff, #0099ff , #00ff00, #ff3399, #6666ff);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        animation: rainbow_animation 6s ease-in-out infinite;
+        background-size: 400% 100%;
+    }
+    #tutils-donation:hover {
+        text-decoration: underline;
+    }
+    @keyframes rainbow_animation {
+        0%,100% {
+            background-position: 0 0;
+        }
+        50% {
+            background-position: 100% 0;
+        }
+    }`);
+    if(!settings.doDarkMode) {
+        log("Unpatching Dark Mode...",false);
+        addStyle(`.app-loading {
+            background-color: white;
+            color: black;
+        }`);
+    }
+    //window.addEventListener ("load", mainFunc, false);
+    mainFunc();
+}
 async function mainFunc() {
-    console.log("[TeamsUtils] Started.");
-    console.log("[TeamsUtils] Initializing...");
     var foundBar = false;
     while(!foundBar) {
         var bar = document.getElementsByClassName("powerbar-profile fadeable");
         if(bar.length > 0) {
             foundBar = true;
-            console.log("[TeamsUtils] Injecting...");
+            log("Injecting...",false);
             var btn = document.createElement("button");
             btn.type = "button";
             btn.classList.add("ts-sym", "me-profile");
@@ -456,8 +605,12 @@ async function mainFunc() {
             // Remove annoying Desktop app download button
             // Uncomment if you want to, it will not be uncommented in Production versions.
             //document.getElementById("get-app-button").remove();
-            console.log("[TeamsUtils] Injected.");
-            logToGui("Welcome!");
+            log("Injected.",false);
+            if(!settings.firstSetup) {
+                log("Welcome, newbie!")
+            } else {
+                log("Welcome!");
+            }
         }
         await sleep(100);
     }
@@ -478,7 +631,7 @@ async function kickingAction(kickDelay, targetName) {
         } catch (error) { /* Don't care */}
         if(kickDelay < 50) {
             dokicking = false;
-            logToGui("The delay cannot be lower then 50ms, because Teams will freak out. Please stop the script and set a higher delay.");
+            log("The delay cannot be lower then 50ms, because Teams will freak out. Please stop the script and set a higher delay.");
         } else {
             var elements = document.getElementsByTagName("calling-roster-section");
             for (var i = 0; i < elements.length; i++) {
@@ -515,7 +668,7 @@ async function kickingAction(kickDelay, targetName) {
                                             if(partInfo[l].classList.contains("name")) {
                                                 var cname = partInfo[l].children[0].innerHTML;
                                                 if(cname.toString().toLowerCase().toString().includes(targetName.toString().toLowerCase().toString())) {
-                                                    logToGui("Found " + targetName + " as " + cname + ", kicking...");
+                                                    log("Found " + targetName + " as " + cname + ", kicking...");
                                                     for (var m = 0; m < itemChildren.length; m++) {
                                                         if(itemChildren[m].classList.contains("stateActions") && itemChildren[m].classList.contains("hide-participant-state")) {
                                                             var btns = itemChildren[m].children;
@@ -529,7 +682,7 @@ async function kickingAction(kickDelay, targetName) {
                                                                         for(var o = 0; o < dropElements.length; o++) {
                                                                             if(dropElements[o].children[0].children[1].getAttribute("translate-once") == "calling_roster_remove_paticipant_popup_item") {
                                                                                 dropElements[o].children[0].click();
-                                                                                logToGui(cname + " has been kicked...");
+                                                                                log(cname + " has been kicked...");
                                                                             }
                                                                         }
                                                                     } else {
@@ -572,7 +725,7 @@ async function joiningAction(joinDelay, joinWait, switchChannel, switchTo, switc
                         if(teams[i].classList.contains("team")) {
                             var cTeamName = teams[i].children[0].children[0].children[0].children[1].children[0].children[0].innerHTML;
                             if(cTeamName.toLowerCase().contains(switchTo.toLowerCase())) {
-                                logToGui("Found " + switchTo + " team, opening if necessary...");
+                                log("Found " + switchTo + " team, opening if necessary...");
                                 // Check if teams is collapsed, if it is, open it.
                                 if(teams[i].getAttribute("aria-expanded") == "false") {
                                     teams[i].children[0].children[0].click();
@@ -583,7 +736,7 @@ async function joiningAction(joinDelay, joinWait, switchChannel, switchTo, switc
                                 for(var j = 0; j < channels.length; j++) {
                                     var channelName = channels[j].children[0].children[0].children[0].innerHTML;
                                     if(channelName.toLowerCase().contains(switchToChannel.toLowerCase())) {
-                                        logToGui("Found " + switchToChannel + " channel, opening if necessary...");
+                                        log("Found " + switchToChannel + " channel, opening if necessary...");
                                         channels[j].children[0].click();
                                         didswitch = true;
                                     }
@@ -592,23 +745,23 @@ async function joiningAction(joinDelay, joinWait, switchChannel, switchTo, switc
                         }
                     }
                 } else {
-                    logToGui("[ERROR] You don't have any teams to join to.");
+                    log("[ERROR] You don't have any teams to join to.");
                 }
             } else {
-                logToGui("[ERROR] Couldn't find teams list.");
+                log("[ERROR] Couldn't find teams list.");
             }
             await sleep(joinDelay);
         }
-        logToGui("Fetching meetings...");
+        log("Fetching meetings...");
         // Get meeting button
         var element = document.getElementsByClassName("ts-sym ts-btn ts-btn-primary inset-border icons-call-jump-in ts-calling-join-button app-title-bar-button app-icons-fill-hover call-jump-in");
         if(element.length > 0) {
             element = element[0];
             // Validated, a meeting is running and the join button is available.
             // Wait for 'joinWait' and then click the join button
-            logToGui("Found a meeting, joining in " + joinWait + "ms");
+            log("Found a meeting, joining in " + joinWait + "ms");
             await sleep(joinWait);
-            logToGui("Joining...");
+            log("Joining...");
             element.click();
             await sleep(100);
             // Check if the continue without camera or audio dialog opens
@@ -616,7 +769,7 @@ async function joiningAction(joinDelay, joinWait, switchChannel, switchTo, switc
             if(withoutBtn.length > 0) {
                 // If it did, close it.
                 withoutBtn[0].click();
-                logToGui("Closed warning box.");
+                log("Closed warning box.");
             }
             await sleep(100);
             var toggleMic = document.getElementById("preJoinAudioButton");
@@ -625,7 +778,7 @@ async function joiningAction(joinDelay, joinWait, switchChannel, switchTo, switc
                 // Check if mic is on, then turn off if it is.
                 if(toggleMic.getAttribute("telemetry-outcome") == "30") {
                     toggleMic.children[0].children[0].click();
-                    logToGui("Turned microphone off.");
+                    log("Turned microphone off.");
                 }
             }
             await sleep(50);
@@ -638,7 +791,7 @@ async function joiningAction(joinDelay, joinWait, switchChannel, switchTo, switc
                         // Check if camera is on, then turn off if it is.
                         if(toggleCam.getAttribute("telemetry-outcome") == "26") {
                             toggleCam.children[0].children[0].click();
-                            logToGui("Turned camera off.");
+                            log("Turned camera off.");
                         }
                     }
                 }
@@ -649,9 +802,9 @@ async function joiningAction(joinDelay, joinWait, switchChannel, switchTo, switc
             if(joinBtn.length > 0) {
                 joinBtn[0].click();
                 dojoining = false;
-                logToGui("Joined.");
+                log("Joined.");
             } else {
-                logToGui("[ERROR] Failed to join meeting, can't find the join button.");
+                log("[ERROR] Failed to join meeting, can't find the join button.");
             }
         }
         // Wait
@@ -686,13 +839,12 @@ async function disconnectAction(disconnectThreshold, disconnectDelay) {
             }
         }
         // Log current users into the console window.
-        logToGui("Users in meeting: " + sum);
-        console.log();
+        log("Users in meeting: " + sum);
         if(sum <= disconnectThreshold && sum != 0) {
             // Disconnect because the sum is lower then the set disconnectThreshold
             document.getElementById("hangup-button").click();
             dodisconnect = false;
-            logToGui("Disconnect Threshold is " + disconnectThreshold + ", disconnecting at " + sum + " attendees...");
+            log("Disconnect Threshold is " + disconnectThreshold + ", disconnecting at " + sum + " attendees...");
         }
         // Wait
         await sleep(disconnectDelay);
@@ -701,5 +853,49 @@ async function disconnectAction(disconnectThreshold, disconnectDelay) {
 async function cancelDisconnect() {
     // Stop the script
     dodisconnect = false;
+}
+/* !!! AutoSeeMore !!! */
+async function seeMoreAction(seeMoreCheckDelay) {
+    settings.doSeeMore = true;
+    manageSettings(true);
+    while(settings.doSeeMore) {
+        var sum = 0;
+        // Count See More buttons
+        var buttons = document.getElementsByClassName("ts-sym ts-see-more-button ts-see-more-fold");
+        if(buttons.length > 0) {
+            for (var i = 0; i < buttons.length; i++) {
+                if(buttons[i].getAttribute("ng-click") == "toggleSeeMore()") {
+                    buttons[i].click();
+                    sum++;
+                }
+            }
+
+            if(sum > 0) {
+                var seeLessBtns = document.getElementsByClassName("ts-sym ts-see-more-button");
+                for (var i = 0; i < seeLessBtns.length; i++) {
+                    if(seeLessBtns[i].getAttribute("track-default") == "toggleSeeLess") {
+                        seeLessBtns[i].remove();
+                    }
+                }
+            }
+        }
+        // Wait
+        await sleep(seeMoreCheckDelay);
+    }
+}
+async function cancelSeeMore() {
+    // Stop the script
+    settings.doSeeMore = false;
+    manageSettings(true);
+}
+/* !!! DoDarkMode !!! */
+async function doDarkMode() {
+    settings.doDarkMode = true;
+    manageSettings(true);
+}
+async function cancelDarkMode() {
+    // Stop the script
+    settings.doDarkMode = false;
+    manageSettings(true);
 }
 observer.observe(target, config);
