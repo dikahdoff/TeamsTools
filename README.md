@@ -16,4 +16,5 @@
   Auto kicks a selected person every time they are in the meeting.
 - **Better Dark Mode**
   Makes it so that you won't get blind you everytime you start Teams.
-
+- **Remove annoyances**
+  Removes bloat/annoying features from the platform
