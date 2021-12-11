@@ -1,18 +1,18 @@
 {
 	"manifest_version": 3,
-	"name": "TeamsUtils",
+	"name": "TeamsTools",
 	"version": "0.4",
 	"author": [{
 	  "name": "dikahdoff",
 	  "email": "dikahdoff@gmail.com"
 	}],
-	"homepage_url": "https://github.com/dikahdoff/TeamsUtils",
+	"homepage_url": "https://github.com/dikahdoff/TeamsTools",
 	"description": "Automating Microsoft Teams in a useful way.",
 	"icons": { "64": "icon-64.png",
 			   "128": "icon-128.png",
 		       "1200": "icon-full.png" },
 	"action": {
-		"default_title": "TeamsUtils",
+		"default_title": "TeamsTools",
 		"default_popup": "popup.html"
 	},
 	"permissions": [
