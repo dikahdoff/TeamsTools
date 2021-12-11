@@ -24,27 +24,51 @@ addStyle(`body {
     background-color: black;
     color: white;
 }`);
+log("Patched Dark Mode.", false);
 // Try loading in the settings, if failed, load default settings
 try {
-    chrome.storage.sync.get(['tsettings'], function(result) {
-        settings = JSON.parse(result.tsettings);
-        init();
+    log("Loading settings...", false);
+    chrome.storage.sync.get('tsettings', function(result) {
+        settings = result.tsettings;
+        if (typeof profile === "undefined") {
+            value = JSON.stringify(defaultSettings);
+            try {
+                chrome.storage.sync.set({tsettings: value}, function() {
+                    settings = defaultSettings;
+                    log("Settings loaded from defaultSettings and got saved to syncsave", false);
+                    init();
+                });
+            } catch (error) {
+                console.warn(error);
+                log("Settings loaded from temp defaultSettings due to an error", false);
+                settings = defaultSettings;
+                init();
+            }
+        } else {
+            settings = JSON.parse(settings);
+            log("Settings loaded from syncsave", false);
+            init();
+        }
     });
 } catch (error) {
+    console.warn(error);
     value = JSON.stringify(defaultSettings);
     try {
         chrome.storage.sync.set({tsettings: value}, function() {
             settings = defaultSettings;
+            log("Settings loaded from defaultSettings and got saved to syncsave", false);
             init();
         });
     } catch (error) {
         console.warn(error);
+        log("Settings loaded from temp defaultSettings due to an error", false);
         settings = defaultSettings;
         init();
     }
 }
 // Inject more CSS and unpatch dark mode if required
 function init() {
+    log("Started.",false);
     if(settings.doSeeMore) {
         seeMoreAction();
     }
@@ -54,9 +78,8 @@ function init() {
     if(settings.doRemoveAnnoy) {
         doRemoveAnnoy();
     }
-    log("Started.",false);
     log("Initializing...",false);
-    addStyle(`#tutils-donation {
+    addStyle(`#tutils-donation, #tutils-donation-long {
         font-size: 16px;
         font-weight: bold;
         background: linear-gradient(to right, #6666ff, #0099ff , #00ff00, #ff3399, #6666ff);
@@ -66,7 +89,10 @@ function init() {
         animation: rainbow_animation 6s ease-in-out infinite;
         background-size: 400% 100%;
     }
-    #tutils-donation:hover {
+    #tutils-donation-long {
+        font-size: 20px;
+    }
+    #tutils-donation:hover, #tutils-donation-long:hover {
         text-decoration: underline;
     }
     @keyframes rainbow_animation {
@@ -99,7 +125,7 @@ async function mainFunc() {
             btn.type = "button";
             btn.classList.add("ts-sym", "me-profile");
             btn.href = "#";
-            /* Append image */
+            // Append image
             var userInfoBtn = document.createElement("div");
             userInfoBtn.classList.add("user-information-button");
             userInfoBtn.setAttribute("data-tid", "userInformation");
@@ -114,8 +140,14 @@ async function mainFunc() {
             profileImgParent.appendChild(profilePictureItem);
             userInfoBtn.appendChild(profileImgParent);
             btn.appendChild(userInfoBtn);
-            /* End of append */
             btn.addEventListener('click', openMenu);
+            var waffleheader = document.getElementsByClassName("waffle-header")[0];
+            var dlink = document.createElement("a");
+            dlink.innerHTML = "Donate                               ";
+            dlink.target = "_blank";
+            dlink.href = parsed.donationLink;
+            dlink.id = "tutils-donation-long";
+            waffleheader.appendChild(dlink);
             bar[0].appendChild(btn);
             // Remove annoying Desktop app download button
             if(settings.doRemoveAnnoy) {
@@ -170,12 +202,6 @@ function manageSettings(write = false, settingsJson = settings) {
         try {
             chrome.storage.sync.get(['tsettings'], function(result) {
                 settings = JSON.parse(result.tsettings);
-                if(settings.doDarkMode) {
-                    doDarkMode();
-                }
-                if(settings.doSeeMore) {
-                    seeMoreAction();
-                }
                 return true;
             });
         } catch (error) {
@@ -402,7 +428,7 @@ var observer = new MutationObserver(function(mutations) {
         if(document.title != null && !document.title.includes(parsed.teamsTitle)) {
             document.title = document.title.replace("Microsoft Teams", parsed.teamsTitle);
             try {
-                document.getElementsByClassName("teams-title")[0].innerText = parsed.teamsTitle;
+                document.getElementsByClassName("teams-title")[0].innerText = parsed.teamsTitle + " - ";
             } catch (error) { /* Cope */ }
         }
     });
@@ -462,6 +488,7 @@ function openMenu() {
             btnBtnElement.id = "tutils-donation";
             btnBtnElement.setAttribute("ng-click", "sdc.gotoManage(); sdc.hide()");
             btnBtnElement.innerText = parsed.style.button + " Help fund the project!";
+            btnBtnElement.title = "Opens " + parsed.donationLink;
             btnBtnElement.addEventListener('click', openDonation);
             btnElement.appendChild(btnBtnElement);
             mainList.appendChild(btnElement);
@@ -478,6 +505,7 @@ function openMenu() {
         btnBtnElement.classList.add("ts-sym");
         btnBtnElement.setAttribute("ng-click", "sdc.gotoManage(); sdc.hide()");
         btnBtnElement.innerText = parsed.style.button + " Visit project link";
+        btnBtnElement.title = "Opens " + parsed.link;
         btnBtnElement.addEventListener('click', openPage);
         btnElement.appendChild(btnBtnElement);
         mainList.appendChild(btnElement);
@@ -494,6 +522,7 @@ function openMenu() {
             btnBtnElement.classList.add("ts-sym");
             btnBtnElement.setAttribute("ng-click", "sdc.gotoManage(); sdc.hide()");
             btnBtnElement.innerText = parsed.style.button + " Visit store link";
+            btnBtnElement.title = "Opens " + parsed.storeLink;
             btnBtnElement.addEventListener('click', openStorePage);
             btnElement.appendChild(btnBtnElement);
             mainList.appendChild(btnElement);
@@ -511,6 +540,7 @@ function openMenu() {
             btnBtnElement.classList.add("ts-sym");
             btnBtnElement.setAttribute("ng-click", "sdc.gotoManage(); sdc.hide()");
             btnBtnElement.innerText = parsed.style.button + " Changelog";
+            btnBtnElement.title = "Opens " + parsed.changelog;
             btnBtnElement.addEventListener('click', openChangelog);
             btnElement.appendChild(btnBtnElement);
             mainList.appendChild(btnElement);
@@ -638,6 +668,7 @@ function openMenu() {
         closeBtn.type = "button";
         closeBtn.setAttribute("data-tid", "upgrade-button");
         closeBtn.innerText = "Close Menu";
+        closeBtn.title = "Close this menu manually";
         closeBtn.addEventListener('click', closeMenu);
         divDivSettingsDropdown.appendChild(mainList);
         splitterElement = document.createElement("li");
@@ -726,7 +757,7 @@ async function kickingAction(kickDelay, targetName) {
                                                                             }
                                                                         }
                                                                     } else {
-                                                                        console.log("Please wait...\nDownload this script: " + parsed.link + "");
+                                                                        log("Please wait...");
                                                                     }
                                                                 }
                                                             }
@@ -758,7 +789,7 @@ async function joiningAction(joinDelay, joinWait, switchChannel, switchTo, switc
     dojoining = true;
     while(dojoining) {
         if(switchChannel && !didswitch) {
-            console.warn("Switching to " + switchTo + " before fetching...\nDownload this script: " + parsed.link + "");
+            log("Switching to " + switchTo + " before fetching...");
             var teams = document.getElementsByClassName("app-left-rail-width");
             if(teams.length > 0) {
                 teams = teams[0].children[0].children[0].children[1].children;
