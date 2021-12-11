@@ -3,7 +3,7 @@
 		"name": "Beta 0.1",
 		"date": 1619987160,
 		"maintainer": "https://github.com/dikahdoff",
-		"release": "https://github.com/dikahdoff/TeamsUtils/releases/tag/ext-0.1",
+		"release": "https://github.com/dikahdoff/TeamsTools/releases/tag/ext-0.1",
 		"features": [
 			"Initial Beta Release"
 		]
@@ -12,7 +12,7 @@
 		"name": "Beta 0.2",
 		"date": 1620305100,
 		"maintainer": "https://github.com/dikahdoff",
-		"release": "https://github.com/dikahdoff/TeamsUtils/releases/tag/ext-0.2",
+		"release": "https://github.com/dikahdoff/TeamsTools/releases/tag/ext-0.2",
 		"features": [
 			"Moved more stuff over to scripts.json to make the extension more dynamic",
 			"Added limit checking to settings variables when starting a script",
@@ -25,10 +25,27 @@
 		"name": "Beta 0.3",
 		"date": 1620652680,
 		"maintainer": "https://github.com/dikahdoff",
-		"release": "https://github.com/dikahdoff/TeamsUtils/releases/tag/ext-0.3",
+		"release": "https://github.com/dikahdoff/TeamsTools/releases/tag/ext-0.3",
 		"features": [
 			"Fixed error checking on input boxes",
 			"Updated some resources"
+		]
+	},
+	"0.4": {
+		"name": "Beta 0.4",
+		"date": 0,
+		"maintainer": "https://github.com/dikahdoff",
+		"release": "https://github.com/dikahdoff/TeamsTools/releases/tag/ext-0.4",
+		"features": [
+			"Rebranded to TeamsTools",
+			"Always \"See More\" - get rid of the \"See More\" button",
+			"Better Dark Mode - if you don't want to blind yourself",
+			"Remove annoyances - remove bloat/annoying features",
+			"New style",
+			"Added support for the https://teams.live.com alternative URL",
+			"Bugfixes & Tweaks",
+			"Offline mode if the servers are down",
+			"Cleaner code"
 		]
 	}
 }
