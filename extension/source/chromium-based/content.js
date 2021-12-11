@@ -7,7 +7,8 @@ var settings = {}
 var defaultSettings = {
     firstSetup: false,
     doSeeMore: true,
-    doDarkMode: true
+    doDarkMode: true,
+    doRemoveAnnoy: true,
 };
 var dokicking, dojoining, dodisconnect = false;
 
@@ -27,12 +28,6 @@ addStyle(`body {
 try {
     chrome.storage.sync.get(['tsettings'], function(result) {
         settings = JSON.parse(result.tsettings);
-        if(settings.doDarkMode) {
-            doDarkMode();
-        }
-        if(settings.doSeeMore) {
-            seeMoreAction();
-        }
         init();
     });
 } catch (error) {
@@ -50,6 +45,15 @@ try {
 }
 // Inject more CSS and unpatch dark mode if required
 function init() {
+    if(settings.doSeeMore) {
+        seeMoreAction();
+    }
+    if(settings.doDarkMode) {
+        doDarkMode();
+    }
+    if(settings.doRemoveAnnoy) {
+        doRemoveAnnoy();
+    }
     log("Started.",false);
     log("Initializing...",false);
     addStyle(`#tutils-donation {
@@ -114,14 +118,15 @@ async function mainFunc() {
             btn.addEventListener('click', openMenu);
             bar[0].appendChild(btn);
             // Remove annoying Desktop app download button
-            // Uncomment if you want to, it will not be uncommented in Production versions.
-            //document.getElementById("get-app-button").remove();
-            log("Injected.",false);
-            if(!settings.firstSetup) {
-                log("Welcome, newbie!")
-            } else {
-                log("Welcome!");
+            if(settings.doRemoveAnnoy) {
+                document.getElementById("get-app-button").parentElement.parentElement.remove();
             }
+            log("Injected.",false);
+            //if(!settings.firstSetup) {
+                //log("Welcome, newbie!")
+            //} else {
+                log("Welcome!");
+            //}
         }
         await sleep(100);
     }
@@ -264,6 +269,8 @@ function isRunning(key) {
             return settings.doSeeMore;
         case "DoDarkMode":
             return settings.doDarkMode;
+        case "DoRemoveAnnoy":
+            return settings.doRemoveAnnoy;
         default:
             return null;
     }
@@ -312,6 +319,9 @@ function getSettings(key) {
         case "DoDarkMode":
             doDarkMode();
             break;
+        case "DoRemoveAnnoy":
+            doRemoveAnnoy(100);
+            break;
         default:
             log("[ERROR] Action isn't implemented in this version of the client. Please update the extension: " + parsed.link);
             alert("ERROR! Action isn't implemented in this version of the client. Please update the extension: " + parsed.link);
@@ -338,6 +348,9 @@ function stopScript(key) {
             break;
         case "DoDarkMode":
             cancelDarkMode();
+            break;
+        case "DoRemoveAnnoy":
+            cancelRemoveAnnoy();
             break;
         default:
             log("[ERROR] Action isn't implemented in this version of the client. Please update the extension: " + parsed.link);
@@ -738,6 +751,7 @@ async function cancelKicking() {
     // Stop the script
     dokicking = false;
 }
+
 // AutoJoinMeeting
 var didswitch = false;
 async function joiningAction(joinDelay, joinWait, switchChannel, switchTo, switchToChannel) {
@@ -843,6 +857,7 @@ async function cancelJoining() {
     // Stop the script
     dojoining = false;
 }
+
 // AutoDisconnect
 async function disconnectAction(disconnectThreshold, disconnectDelay) {
     dodisconnect = true;
@@ -882,6 +897,7 @@ async function cancelDisconnect() {
     // Stop the script
     dodisconnect = false;
 }
+
 // AutoSeeMore
 async function seeMoreAction(seeMoreCheckDelay) {
     settings.doSeeMore = true;
@@ -893,7 +909,6 @@ async function seeMoreAction(seeMoreCheckDelay) {
         if(buttons.length > 0) {
             for (var i = 0; i < buttons.length; i++) {
                 if(buttons[i].getAttribute("ng-click") == "toggleSeeMore()") {
-                    console.log(buttons[i]);
                     buttons[i].click();
                     sum++;
                 }
@@ -917,6 +932,7 @@ async function cancelSeeMore() {
     settings.doSeeMore = false;
     manageSettings(true);
 }
+
 // DoDarkMode
 async function doDarkMode() {
     settings.doDarkMode = true;
@@ -925,6 +941,32 @@ async function doDarkMode() {
 async function cancelDarkMode() {
     // Stop the script
     settings.doDarkMode = false;
+    manageSettings(true);
+}
+
+// DoRemoveAnnoy
+async function doRemoveAnnoy(removeAnnoyDelay) {
+    settings.doRemoveAnnoy = true;
+    manageSettings(true);
+    var annoyances = ["download-app-button", "download-mobile-app-button"];
+    while(settings.doRemoveAnnoy) {
+        try {
+            annoyances.forEach(annoyance => {
+                var elem = document.getElementById(annoyance);
+                if(!(typeof elem === undefined) && elem != null) {
+                    elem.parentElement.remove();
+                }
+            });
+        } catch (error) {
+            console.warn(error);
+        }
+        // Wait
+        await sleep(removeAnnoyDelay);
+    }
+}
+async function cancelRemoveAnnoy() {
+    // Stop the script
+    settings.doRemoveAnnoy = false;
     manageSettings(true);
 }
 

@@ -133,15 +133,19 @@
 			"name": "Always See More",
 			"key": "AutoSeeMore",
 			"url": "",
-			"description": "Always display long messages without having to click the \"See More\" button",
-			"settings": []
+			"description": "Always display long messages without having to click the \"See More\" button"
 		},
 		{
 			"name": "Better Dark Mode",
 			"key": "DoDarkMode",
 			"url": "",
-			"description": "Won't blind you everytime you start Teams",
-			"settings": []
+			"description": "Won't blind you everytime you start Teams"
+		},
+		{
+			"name": "Remove annoyances",
+			"key": "DoRemoveAnnoy",
+			"url": "",
+			"description": "Removes bloat/annoying features from the platform"
 		}
 	],
 	"style": {
