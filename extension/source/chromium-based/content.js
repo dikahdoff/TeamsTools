@@ -1,5 +1,29 @@
 var parsed = null;
-parsed = JSON.parse(httpGet("https://raw.githack.com/dikahdoff/temp/main/scripts.json"));
+
+// Replace scripts.json with offline version if server is unavailable.
+onlinever = httpGet("https://raw.githack.com/dikahdoff/TeamsTools/master/scripts.json")
+if(onlinever == false) {
+    console.warn("TeamsTools server offline, trying to load cached version");
+    chrome.storage.sync.get('tscripts', function(result) {
+        scripts = result.tscripts;
+        if ((typeof scripts === "undefined") || scripts == null ) {
+            panic("TeamsTools server offline and no cached version of config. TeamsTools can't load. Sorry for the inconvenience");
+        } else {
+            console.log("TeamsTools server offline, loading cached version...");
+            parsed = scripts;
+            parsed.title += " [OFFLINE]";
+            preInit();
+        }
+    });
+} else {
+    console.log("TeamsTools server online, loading that...");
+    parsed = JSON.parse(onlinever);
+    value = parsed;
+    chrome.storage.sync.set({tscripts: value}, function() {
+        log("Scripts saved to cache.", false);
+    });
+    preInit();
+}
 
 var manifestData = chrome.runtime.getManifest();
 
@@ -13,59 +37,62 @@ var defaultSettings = {
 var dokicking, dojoining, dodisconnect = false;
 
 /* Initialization */
-log("Starting...", false);
-// Inject dark mode CSS beforehand because it's better to not get blinded, then switch back to flashbang mode (if the user wants to), then flashbanging those users, who don't want to be flashbanged
-log("Patching Dark Mode...", false);
-addStyle(`body {
-    background-color: black;
-    color: white;
-}
-.app-loading {
-    background-color: black;
-    color: white;
-}`);
-log("Patched Dark Mode.", false);
-// Try loading in the settings, if failed, load default settings
-try {
-    log("Loading settings...", false);
-    chrome.storage.sync.get('tsettings', function(result) {
-        settings = result.tsettings;
-        if (typeof profile === "undefined") {
-            value = JSON.stringify(defaultSettings);
-            try {
-                chrome.storage.sync.set({tsettings: value}, function() {
+function preInit() {
+    log("Starting...", false);
+    // Inject dark mode CSS beforehand because it's better to not get blinded, then switch back to flashbang mode (if the user wants to), then flashbanging those users, who don't want to be flashbanged
+    log("Patching Dark Mode...", false);
+    addStyle(`body {
+        background-color: black;
+        color: white;
+    }
+    .app-loading {
+        background-color: black;
+        color: white;
+    }`);
+    log("Patched Dark Mode.", false);
+    // Try loading in the settings, if failed, load default settings
+    try {
+        log("Loading settings...", false);
+        chrome.storage.sync.get('tsettings', function(result) {
+            settings = result.tsettings;
+            if (typeof settings === "undefined") {
+                value = JSON.stringify(defaultSettings);
+                try {
+                    chrome.storage.sync.set({tsettings: value}, function() {
+                        settings = defaultSettings;
+                        log("Settings loaded from defaultSettings and got saved to syncsave", false);
+                        init();
+                    });
+                } catch (error) {
+                    console.warn(error);
+                    log("Settings loaded from temp defaultSettings due to an error", false);
                     settings = defaultSettings;
-                    log("Settings loaded from defaultSettings and got saved to syncsave", false);
                     init();
-                });
-            } catch (error) {
-                console.warn(error);
-                log("Settings loaded from temp defaultSettings due to an error", false);
-                settings = defaultSettings;
+                }
+            } else {
+                settings = JSON.parse(settings);
+                log("Settings loaded from syncsave", false);
                 init();
             }
-        } else {
-            settings = JSON.parse(settings);
-            log("Settings loaded from syncsave", false);
-            init();
-        }
-    });
-} catch (error) {
-    console.warn(error);
-    value = JSON.stringify(defaultSettings);
-    try {
-        chrome.storage.sync.set({tsettings: value}, function() {
-            settings = defaultSettings;
-            log("Settings loaded from defaultSettings and got saved to syncsave", false);
-            init();
         });
     } catch (error) {
         console.warn(error);
-        log("Settings loaded from temp defaultSettings due to an error", false);
-        settings = defaultSettings;
-        init();
+        value = JSON.stringify(defaultSettings);
+        try {
+            chrome.storage.sync.set({tsettings: value}, function() {
+                settings = defaultSettings;
+                log("Settings loaded from defaultSettings and got saved to syncsave", false);
+                init();
+            });
+        } catch (error) {
+            console.warn(error);
+            log("Settings loaded from temp defaultSettings due to an error", false);
+            settings = defaultSettings;
+            init();
+        }
     }
 }
+
 // Inject more CSS and unpatch dark mode if required
 function init() {
     log("Started.",false);
@@ -173,10 +200,15 @@ function sleep(ms) {
 // Send HTTP GET request and get the content
 function httpGet(url)
 {
-    var xmlHttp = new XMLHttpRequest();
-    xmlHttp.open("GET", url, false);
-    xmlHttp.send(null);
-    return xmlHttp.responseText;
+    try {
+        var xmlHttp = new XMLHttpRequest();
+        xmlHttp.open("GET", url, false);
+        xmlHttp.send(null);
+        return xmlHttp.responseText;
+    } catch (error) {
+        console.warn(error);
+        return false;
+    }
 }
 
 // Inject CSS into the webpage
@@ -417,6 +449,16 @@ function log(logStr, gui = true) {
         } else {
             console.warn(parsed.prefix + "Failed to log to GUI, because selected element was not found.");
         }
+    }
+}
+
+// Send panic message to user
+function panic(panicStr, gui = true) {
+    var nowTime = new Date().toLocaleTimeString();
+    panicStr = "(" + nowTime + ") [TeamsTools Panic] " + panicStr;
+    console.error(panicStr);
+    if(gui) {
+        alert(panicStr);
     }
 }
 
