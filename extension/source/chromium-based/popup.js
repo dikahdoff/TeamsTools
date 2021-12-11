@@ -11,7 +11,7 @@ function httpGet(theUrl)
     return xmlHttp.responseText;
 }
 async function popupTask() {
-    var parsed = JSON.parse(httpGet("https://raw.githubusercontent.com/dikahdoff/TeamsUtils/main/scripts.json"));
+    var parsed = JSON.parse(httpGet("https://raw.githubusercontent.com/dikahdoff/TeamsTools/main/scripts.json"));
     if(parsed != null) {
         document.getElementById("popup_title").innerText = parsed.title;
         document.getElementById("popup_header_logo").src = parsed.icon;
@@ -27,7 +27,7 @@ async function popupTask() {
 			var tutorialTxt = document.createElement("p");
 			tutorialTxt.innerHTML = "Use this menu to access the extension's functions.";
 			document.getElementById("popup_utils").appendChild(tutorialTxt);
-			tutorial.src = "tutorial.png";
+			tutorial.src = "tutorial.jpg";
 			tutorial.setAttribute("style", "width:100%");
 			document.getElementById("popup_utils").appendChild(tutorial);
         } else {
