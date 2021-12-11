@@ -1,35 +1,155 @@
 var parsed = null;
 parsed = JSON.parse(httpGet("https://raw.githack.com/dikahdoff/temp/main/scripts.json"));
 
+var manifestData = chrome.runtime.getManifest();
+
 var settings = {}
 var defaultSettings = {
     firstSetup: false,
     doSeeMore: true,
     doDarkMode: true
 };
+var dokicking, dojoining, dodisconnect = false;
 
-var manifestData = chrome.runtime.getManifest();
+/* Initialization */
+log("Starting...", false);
+// Inject dark mode CSS beforehand because it's better to not get blinded, then switch back to flashbang mode (if the user wants to), then flashbanging those users, who don't want to be flashbanged
+log("Patching Dark Mode...", false);
+addStyle(`body {
+    background-color: black;
+    color: white;
+}
+.app-loading {
+    background-color: black;
+    color: white;
+}`);
+// Try loading in the settings, if failed, load default settings
+try {
+    chrome.storage.sync.get(['tsettings'], function(result) {
+        settings = JSON.parse(result.tsettings);
+        if(settings.doDarkMode) {
+            doDarkMode();
+        }
+        if(settings.doSeeMore) {
+            seeMoreAction();
+        }
+        init();
+    });
+} catch (error) {
+    value = JSON.stringify(defaultSettings);
+    try {
+        chrome.storage.sync.set({tsettings: value}, function() {
+            settings = defaultSettings;
+            init();
+        });
+    } catch (error) {
+        console.warn(error);
+        settings = defaultSettings;
+        init();
+    }
+}
+// Inject more CSS and unpatch dark mode if required
+function init() {
+    log("Started.",false);
+    log("Initializing...",false);
+    addStyle(`#tutils-donation {
+        font-size: 16px;
+        font-weight: bold;
+        background: linear-gradient(to right, #6666ff, #0099ff , #00ff00, #ff3399, #6666ff);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        animation: rainbow_animation 6s ease-in-out infinite;
+        background-size: 400% 100%;
+    }
+    #tutils-donation:hover {
+        text-decoration: underline;
+    }
+    @keyframes rainbow_animation {
+        0%,100% {
+            background-position: 0 0;
+        }
+        50% {
+            background-position: 100% 0;
+        }
+    }`);
+    if(!settings.doDarkMode) {
+        log("Unpatching Dark Mode...",false);
+        addStyle(`.app-loading {
+            background-color: white;
+            color: black;
+        }`);
+    }
+    //window.addEventListener ("load", mainFunc, false);
+    mainFunc();
+}
+// Inject TeamsTools button to the header when it's found
+async function mainFunc() {
+    var foundBar = false;
+    while(!foundBar) {
+        var bar = document.getElementsByClassName("powerbar-profile fadeable");
+        if(bar.length > 0) {
+            foundBar = true;
+            log("Injecting...",false);
+            var btn = document.createElement("button");
+            btn.type = "button";
+            btn.classList.add("ts-sym", "me-profile");
+            btn.href = "#";
+            /* Append image */
+            var userInfoBtn = document.createElement("div");
+            userInfoBtn.classList.add("user-information-button");
+            userInfoBtn.setAttribute("data-tid", "userInformation");
+            var profileImgParent = document.createElement("div");
+            profileImgParent.classList.add("profile-img-parent");
+            var profilePictureItem = document.createElement("profile-picture");
+            profilePictureItem.setAttribute("css-class", "user-picture");
+            var imgProfPic = document.createElement("img");
+            imgProfPic.src = parsed.teamsBtn;
+            imgProfPic.style = "object-fit: cover;";
+            profilePictureItem.appendChild(imgProfPic);
+            profileImgParent.appendChild(profilePictureItem);
+            userInfoBtn.appendChild(profileImgParent);
+            btn.appendChild(userInfoBtn);
+            /* End of append */
+            btn.addEventListener('click', openMenu);
+            bar[0].appendChild(btn);
+            // Remove annoying Desktop app download button
+            // Uncomment if you want to, it will not be uncommented in Production versions.
+            //document.getElementById("get-app-button").remove();
+            log("Injected.",false);
+            if(!settings.firstSetup) {
+                log("Welcome, newbie!")
+            } else {
+                log("Welcome!");
+            }
+        }
+        await sleep(100);
+    }
+}
 
-var dokicking = false;
-var dojoining = false;
-var dodisconnect = false;
-
-var didswitch = false;
+/* Functions */
+// Send async threads to sleep for given time period
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
-function httpGet(theUrl)
+
+// Send HTTP GET request and get the content
+function httpGet(url)
 {
     var xmlHttp = new XMLHttpRequest();
-    xmlHttp.open( "GET", theUrl, false );
-    xmlHttp.send( null );
+    xmlHttp.open("GET", url, false);
+    xmlHttp.send(null);
     return xmlHttp.responseText;
 }
+
+// Inject CSS into the webpage
 function addStyle(styleString) {
     const style = document.createElement('style');
     style.textContent = styleString;
     document.head.append(style);
 }
+
+// Manage settings I/O
 function manageSettings(write = false, settingsJson = settings) {
     if(write) {
         value = JSON.stringify(settingsJson);
@@ -59,11 +179,15 @@ function manageSettings(write = false, settingsJson = settings) {
         }
     }
 }
+
+// Determine if a String can be parsed as a numeric variable or not
 function isNumeric(str) {
     if (typeof str != "string") return false
     return !isNaN(str) &&
            !isNaN(parseFloat(str))
 }
+
+// Convert a String to a boolean variable if possible
 function strToBool(string){
     switch(string.toLowerCase().trim()){
         case "true": case "yes": case "1": return true;
@@ -71,126 +195,8 @@ function strToBool(string){
         default: return null;
     }
 }
-function isRunning(key) {
-    switch (key) {
-        case "AutoKick":
-            return dokicking;
-        case "AutoJoinMeeting":
-            return dojoining;
-        case "AutoDisconnect":
-            return dodisconnect;
-        case "AutoSeeMore":
-            return settings.doSeeMore;
-        case "DoDarkMode":
-            return settings.doDarkMode;
-        default:
-            return null;
-    }
-}
-function openGenerator() {
-    window.open(parsed.generatorLink);
-}
-function openDonation() {
-    window.open(parsed.donationLink);
-}
-function openPage() {
-    window.open(parsed.link);
-}
-function openChangelog() {
-    window.open(parsed.changelog);
-}
-function openStorePage() {
-    window.open(parsed.storeLink);
-}
-function workInProgress() {
-    alert('Work in Progress');
-}
-function log(logStr, gui = true) {
-    var nowTime = new Date().toLocaleTimeString();
-    console.log("(" + nowTime + ") " + parsed.prefix + "" + logStr + "\nDownload this script: " + parsed.link + "");
-    if(gui) {
-        var outputTxt = document.getElementById("control-input");
-        if(outputTxt != null) {
-            outputTxt.setAttribute("placeholder", "(" + nowTime + ") " + parsed.teamsTitle + "> " + logStr);
-        } else {
-            console.warn(parsed.prefix + "Failed to log to GUI, because selected element was not found.");
-        }
-    }
-}
-function stopScript(key) {
-    log("Stopped " + key + ".");
-    switch (key) {
-        case "AutoKick":
-            cancelKicking();
-            break;
-        case "AutoJoinMeeting":
-            cancelJoining();
-            break;
-        case "AutoDisconnect":
-            cancelDisconnect();
-            break;
-        case "AutoSeeMore":
-            cancelSeeMore();
-            break;
-        case "DoDarkMode":
-            cancelDarkMode();
-            break;
-        default:
-            log("[ERROR] Action isn't implemented in this version of the client. Please update the extension: " + parsed.link);
-            alert("ERROR! Action isn't implemented in this version of the client. Please update the extension: " + parsed.link);
-            break;
-    }
-    closeMenu();
-}
-function getSettings(key) {
-    var set = new Array;
-    parsed.scripts.forEach(element => {
-        if(element.key == key) {
-            element.settings.forEach(settingsElement => {
-                settingsElement.settings.forEach(settingsDetails => {
-                    var typeStr = "";
-                    switch (settingsDetails.type) {
-                        case "int":
-                            typeStr = "(Possible values: Numbers)";
-                            break;
-                        case "bool":
-                            typeStr = "(Possible values: True/False)";
-                            break;
-                        case "str":
-                            typeStr = "(Possible values: Text)";
-                            break;
-                        default:
-                            break;
-                    }
-                    set[settingsDetails.key] = getInput(((settingsDetails.name == null) ? settingsElement.name : settingsDetails.name), settingsElement.description + " " + typeStr,settingsDetails.type, ((settingsDetails.default == null) ? "0" : settingsDetails.default));
-                });
-            });
-        }
-    });
-    log("Running " + key + "...");
-    switch (key) {
-        case "AutoKick":
-            kickingAction(set['kickDelay'], set['targetName']);
-            break;
-        case "AutoJoinMeeting":
-            joiningAction(set['joinDelay'], set['joinWait'], set['switchChannel'], set['switchTo'], set['switchToChannel']);
-            break;
-        case "AutoDisconnect":
-            disconnectAction(set['threshold'], set['delay']);
-            break;
-        case "AutoSeeMore":
-            seeMoreAction(100);
-            break;
-        case "DoDarkMode":
-            doDarkMode();
-            break;
-        default:
-            log("[ERROR] Action isn't implemented in this version of the client. Please update the extension: " + parsed.link);
-            alert("ERROR! Action isn't implemented in this version of the client. Please update the extension: " + parsed.link);
-            break;
-    }
-    closeMenu();
-}
+
+// Get input from the user through input boxes
 function getInput(name, desc, type, def) {
     var taskNotDone = true;
     while(taskNotDone) {
@@ -244,7 +250,139 @@ function getInput(name, desc, type, def) {
         }
     }
 }
-// Title modifications
+
+// Check if selected action is currently running
+function isRunning(key) {
+    switch (key) {
+        case "AutoKick":
+            return dokicking;
+        case "AutoJoinMeeting":
+            return dojoining;
+        case "AutoDisconnect":
+            return dodisconnect;
+        case "AutoSeeMore":
+            return settings.doSeeMore;
+        case "DoDarkMode":
+            return settings.doDarkMode;
+        default:
+            return null;
+    }
+}
+
+// Start selected script
+function getSettings(key) {
+    var set = new Array;
+    parsed.scripts.forEach(element => {
+        if(element.key == key) {
+            element.settings.forEach(settingsElement => {
+                settingsElement.settings.forEach(settingsDetails => {
+                    var typeStr = "";
+                    switch (settingsDetails.type) {
+                        case "int":
+                            typeStr = "(Possible values: Numbers)";
+                            break;
+                        case "bool":
+                            typeStr = "(Possible values: True/False)";
+                            break;
+                        case "str":
+                            typeStr = "(Possible values: Text)";
+                            break;
+                        default:
+                            break;
+                    }
+                    set[settingsDetails.key] = getInput(((settingsDetails.name == null) ? settingsElement.name : settingsDetails.name), settingsElement.description + " " + typeStr,settingsDetails.type, ((settingsDetails.default == null) ? "0" : settingsDetails.default));
+                });
+            });
+        }
+    });
+    log("Running " + key + "...");
+    switch (key) {
+        case "AutoKick":
+            kickingAction(set['kickDelay'], set['targetName']);
+            break;
+        case "AutoJoinMeeting":
+            joiningAction(set['joinDelay'], set['joinWait'], set['switchChannel'], set['switchTo'], set['switchToChannel']);
+            break;
+        case "AutoDisconnect":
+            disconnectAction(set['threshold'], set['delay']);
+            break;
+        case "AutoSeeMore":
+            seeMoreAction(100);
+            break;
+        case "DoDarkMode":
+            doDarkMode();
+            break;
+        default:
+            log("[ERROR] Action isn't implemented in this version of the client. Please update the extension: " + parsed.link);
+            alert("ERROR! Action isn't implemented in this version of the client. Please update the extension: " + parsed.link);
+            break;
+    }
+    closeMenu();
+}
+
+// Stop selected script
+function stopScript(key) {
+    log("Stopped " + key + ".");
+    switch (key) {
+        case "AutoKick":
+            cancelKicking();
+            break;
+        case "AutoJoinMeeting":
+            cancelJoining();
+            break;
+        case "AutoDisconnect":
+            cancelDisconnect();
+            break;
+        case "AutoSeeMore":
+            cancelSeeMore();
+            break;
+        case "DoDarkMode":
+            cancelDarkMode();
+            break;
+        default:
+            log("[ERROR] Action isn't implemented in this version of the client. Please update the extension: " + parsed.link);
+            alert("ERROR! Action isn't implemented in this version of the client. Please update the extension: " + parsed.link);
+            break;
+    }
+    closeMenu();
+}
+
+// Links or pop-ups
+function openGenerator() {
+    window.open(parsed.generatorLink);
+}
+function openDonation() {
+    window.open(parsed.donationLink);
+}
+function openPage() {
+    window.open(parsed.link);
+}
+function openChangelog() {
+    window.open(parsed.changelog);
+}
+function openStorePage() {
+    window.open(parsed.storeLink);
+}
+function workInProgress() {
+    alert('Work in Progress');
+}
+
+// Log to console and to GUI if possible
+function log(logStr, gui = true) {
+    var nowTime = new Date().toLocaleTimeString();
+    console.log("(" + nowTime + ") " + parsed.prefix + "" + logStr + "\nDownload this script: " + parsed.link + "");
+    if(gui) {
+        var outputTxt = document.getElementById("control-input");
+        if(outputTxt != null) {
+            outputTxt.setAttribute("placeholder", "(" + nowTime + ") " + parsed.teamsTitle + "> " + logStr);
+        } else {
+            console.warn(parsed.prefix + "Failed to log to GUI, because selected element was not found.");
+        }
+    }
+}
+
+// Title modifier observer task
+var config = {childList: true};
 var target = document.querySelector('title');
 var observer = new MutationObserver(function(mutations) {
     mutations.forEach(function(mutation) {
@@ -256,9 +394,8 @@ var observer = new MutationObserver(function(mutations) {
         }
     });
 });
-var config = {
-    childList: true,
-};
+
+// Function ran when the user opens the TeamsTools menu
 function openMenu() {
     if(document.getElementById("teamsutils-settings") == null) {
         var menu = document.createElement("div");
@@ -501,124 +638,14 @@ function openMenu() {
         closeMenu();
     }
 }
+
+// Function runs when user closes the menu or clicking an action does so
 function closeMenu() {
     document.getElementById("teamsutils-settings").remove();
 }
-log("Starting...", false);
-log("Patching Dark Mode...", false);
-addStyle(`body {
-    background-color: black;
-    color: white;
-}
-.app-loading {
-    background-color: black;
-    color: white;
-}`);
-try {
-    chrome.storage.sync.get(['tsettings'], function(result) {
-        settings = JSON.parse(result.tsettings);
-        if(settings.doDarkMode) {
-            doDarkMode();
-        }
-        if(settings.doSeeMore) {
-            seeMoreAction();
-        }
-        init();
-    });
-} catch (error) {
-    value = JSON.stringify(defaultSettings);
-    try {
-        chrome.storage.sync.set({tsettings: value}, function() {
-            settings = defaultSettings;
-            init();
-        });
-    } catch (error) {
-        console.warn(error);
-        settings = defaultSettings;
-        init();
-    }
-}
 
-function init() {
-    log("Started.",false);
-    log("Initializing...",false);
-    addStyle(`#tutils-donation {
-        font-size: 16px;
-        font-weight: bold;
-        background: linear-gradient(to right, #6666ff, #0099ff , #00ff00, #ff3399, #6666ff);
-        -webkit-background-clip: text;
-        background-clip: text;
-        color: transparent;
-        animation: rainbow_animation 6s ease-in-out infinite;
-        background-size: 400% 100%;
-    }
-    #tutils-donation:hover {
-        text-decoration: underline;
-    }
-    @keyframes rainbow_animation {
-        0%,100% {
-            background-position: 0 0;
-        }
-        50% {
-            background-position: 100% 0;
-        }
-    }`);
-    if(!settings.doDarkMode) {
-        log("Unpatching Dark Mode...",false);
-        addStyle(`.app-loading {
-            background-color: white;
-            color: black;
-        }`);
-    }
-    //window.addEventListener ("load", mainFunc, false);
-    mainFunc();
-}
-async function mainFunc() {
-    var foundBar = false;
-    while(!foundBar) {
-        var bar = document.getElementsByClassName("powerbar-profile fadeable");
-        if(bar.length > 0) {
-            foundBar = true;
-            log("Injecting...",false);
-            var btn = document.createElement("button");
-            btn.type = "button";
-            btn.classList.add("ts-sym", "me-profile");
-            btn.href = "#";
-            /* Append image */
-            var userInfoBtn = document.createElement("div");
-            userInfoBtn.classList.add("user-information-button");
-            userInfoBtn.setAttribute("data-tid", "userInformation");
-            var profileImgParent = document.createElement("div");
-            profileImgParent.classList.add("profile-img-parent");
-            var profilePictureItem = document.createElement("profile-picture");
-            profilePictureItem.setAttribute("css-class", "user-picture");
-            var imgProfPic = document.createElement("img");
-            imgProfPic.src = parsed.teamsBtn;
-            imgProfPic.style = "object-fit: cover;";
-            profilePictureItem.appendChild(imgProfPic);
-            profileImgParent.appendChild(profilePictureItem);
-            userInfoBtn.appendChild(profileImgParent);
-            btn.appendChild(userInfoBtn);
-            /* End of append */
-            btn.addEventListener('click', openMenu);
-            bar[0].appendChild(btn);
-            // Remove annoying Desktop app download button
-            // Uncomment if you want to, it will not be uncommented in Production versions.
-            //document.getElementById("get-app-button").remove();
-            log("Injected.",false);
-            if(!settings.firstSetup) {
-                log("Welcome, newbie!")
-            } else {
-                log("Welcome!");
-            }
-        }
-        await sleep(100);
-    }
-}
-/////////////////////
-/* !!! SCRIPTS !!! */
-/////////////////////
-/* !!! AutoKick.js !!! */
+/* Scripts/actions */
+// AutoKick
 async function kickingAction(kickDelay, targetName) {
     dokicking = true;
     while(dokicking) {
@@ -711,7 +738,8 @@ async function cancelKicking() {
     // Stop the script
     dokicking = false;
 }
-/* !!! AutoJoinMeeting.js !!! */
+// AutoJoinMeeting
+var didswitch = false;
 async function joiningAction(joinDelay, joinWait, switchChannel, switchTo, switchToChannel) {
     dojoining = true;
     while(dojoining) {
@@ -815,7 +843,7 @@ async function cancelJoining() {
     // Stop the script
     dojoining = false;
 }
-/* !!! AutoDisconnect.js !!! */
+// AutoDisconnect
 async function disconnectAction(disconnectThreshold, disconnectDelay) {
     dodisconnect = true;
     while(dodisconnect) {
@@ -854,7 +882,7 @@ async function cancelDisconnect() {
     // Stop the script
     dodisconnect = false;
 }
-/* !!! AutoSeeMore !!! */
+// AutoSeeMore
 async function seeMoreAction(seeMoreCheckDelay) {
     settings.doSeeMore = true;
     manageSettings(true);
@@ -865,6 +893,7 @@ async function seeMoreAction(seeMoreCheckDelay) {
         if(buttons.length > 0) {
             for (var i = 0; i < buttons.length; i++) {
                 if(buttons[i].getAttribute("ng-click") == "toggleSeeMore()") {
+                    console.log(buttons[i]);
                     buttons[i].click();
                     sum++;
                 }
@@ -873,7 +902,7 @@ async function seeMoreAction(seeMoreCheckDelay) {
             if(sum > 0) {
                 var seeLessBtns = document.getElementsByClassName("ts-sym ts-see-more-button");
                 for (var i = 0; i < seeLessBtns.length; i++) {
-                    if(seeLessBtns[i].getAttribute("track-default") == "toggleSeeLess") {
+                    if(seeLessBtns[i].getAttribute("track-default") == "toggleSeeLess" || seeLessBtns[i].getAttribute("track-default") == "toggleSeeMore") {
                         seeLessBtns[i].remove();
                     }
                 }
@@ -888,7 +917,7 @@ async function cancelSeeMore() {
     settings.doSeeMore = false;
     manageSettings(true);
 }
-/* !!! DoDarkMode !!! */
+// DoDarkMode
 async function doDarkMode() {
     settings.doDarkMode = true;
     manageSettings(true);
@@ -898,4 +927,6 @@ async function cancelDarkMode() {
     settings.doDarkMode = false;
     manageSettings(true);
 }
+
+// Start title modifier observer task at last
 observer.observe(target, config);
