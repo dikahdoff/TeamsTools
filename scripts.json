@@ -9,6 +9,7 @@
 	"teamsBtn": "https://raw.githubusercontent.com/dikahdoff/TeamsTools/main/resources/extension-btn-128.png",
 	"icon": "https://raw.githubusercontent.com/dikahdoff/TeamsTools/main/resources/extension-logo-128.png",
 	"storeLink": "https://chrome.google.com/webstore/detail/teamsutils/lofcnmcfagedndhofljcijmgoilkghkm",
+	"firefoxStoreLink": "",
 	"generatorLink": null,
 	"changelog": "https://dikahdoff.github.io/TeamsTools/#changelog",
 	"latestVersion": "0.4",
