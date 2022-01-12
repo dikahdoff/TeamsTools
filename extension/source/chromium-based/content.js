@@ -918,14 +918,14 @@ async function joiningAction(joinDelay, joinWait, switchChannel, switchTo, switc
             }
             await sleep(50);
             // Check if toggle camera exists
-            var toggles = document.getElementsByTagName("toggle-button");
+            var toggles = document.getElementsByClassName("ts-toggle-button");
             for(var i = 0; i < toggles.length; i++) {
-                if(toggles[i].getAttribute("on-click") == "ctrl.toggleVideo()") {
-                    var toggleCam = toggles[i];
-                    if(toggleCam.length > 0) {
+                if(toggles[i].getAttribute("track-summary") != undefined) {
+                    if(toggles[i].getAttribute("track-summary").toLowerCase().includes("toggle camera")) {
+                        var toggleCam = toggles[i];
                         // Check if camera is on, then turn off if it is.
-                        if(toggleCam.getAttribute("telemetry-outcome") == "26") {
-                            toggleCam.children[0].children[0].click();
+                        if(toggleCam.getAttribute("aria-pressed") == "true") {
+                            toggleCam.click();
                             log("Turned camera off.");
                         }
                     }
