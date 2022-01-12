@@ -180,13 +180,21 @@ async function mainFunc() {
             userInfoBtn.appendChild(profileImgParent);
             btn.appendChild(userInfoBtn);
             btn.addEventListener('click', openMenu);
-            var waffleheader = document.getElementsByClassName("waffle-header")[0];
             var dlink = document.createElement("a");
             dlink.innerHTML = "Donate                               ";
             dlink.target = "_blank";
             dlink.href = parsed.donationLink;
             dlink.id = "tutils-donation-long";
-            waffleheader.appendChild(dlink);
+            var waffleheader = document.getElementsByClassName("waffle-header");
+            if(waffleheader.length > 0) {
+                waffleheader[0].appendChild(dlink);
+            } else {
+                waffleheader = document.getElementsByClassName("powerbar-profile fadeable");
+                if(waffleheader.length > 0) {
+                    dlink.innerHTML = "Donate";
+                    waffleheader[0].insertBefore(dlink, waffleheader[0].firstChild);
+                }
+            }
             bar[0].appendChild(btn);
             // Remove annoying Desktop app download button
             if(settings.doRemoveAnnoy) {
@@ -1044,6 +1052,10 @@ async function doRemoveAnnoy(removeAnnoyDelay) {
             });
         } catch (error) {
             console.warn(error);
+        }
+        var dlAppBanner = document.getElementsByClassName("app-notification-banner banner-show promo-banner accent-banner button-banner engagement-surface");
+        if(dlAppBanner.length > 0) {
+            dlAppBanner[0].remove();
         }
         // Wait
         await sleep(removeAnnoyDelay);
