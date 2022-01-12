@@ -51,6 +51,9 @@ function preInit() {
     }
     .guest-license-error, .guest-license-error-footer {
         background: black;
+    }
+    .guest-license-error-dropdown-options {
+        color: black;
     }`);
     log("Patched Dark Mode.", false);
     // Try loading in the settings, if failed, load default settings
@@ -141,6 +144,9 @@ function init() {
         }
         .guest-license-error, .guest-license-error-footer {
             background: #f0f0f0;
+        }
+        .guest-license-error-dropdown-options {
+            color: white;
         }`);
     }
     //window.addEventListener ("load", mainFunc, false);
