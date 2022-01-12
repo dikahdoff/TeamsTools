@@ -11,7 +11,7 @@
 	"storeLink": "https://chrome.google.com/webstore/detail/teamsutils/lofcnmcfagedndhofljcijmgoilkghkm",
 	"generatorLink": null,
 	"changelog": "https://dikahdoff.github.io/TeamsTools/#changelog",
-	"latestVersion": "0.4",
+	"latestVersion": "0.4.1",
 	"characterLimit": 50,
 	"scripts": [
 		{
