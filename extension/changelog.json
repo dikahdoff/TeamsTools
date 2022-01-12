@@ -47,5 +47,17 @@
 			"Offline mode if the servers are down",
 			"Cleaner code"
 		]
+	},
+	"0.4.1": {
+		"name": "Beta 0.4.1",
+		"date": 0,
+		"maintainer": "https://github.com/dikahdoff",
+		"release": "https://github.com/dikahdoff/TeamsTools/releases/tag/ext-0.4.1",
+		"features": [
+			"Fixed camera staying turned on during an autojoin (thanks @Bot-Rakshit)",
+			"Fixed error screen and it's context menu not being correctly \"darkmoded\"",
+			"Fixed extension not loading due to it not being able to find the page's header on some instances",
+			"Added the \"Download the desktop app banner\" to the list of annoyances"
+		]
 	}
 }

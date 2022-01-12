@@ -48,6 +48,12 @@ function preInit() {
     .app-loading {
         background-color: black;
         color: white;
+    }
+    .guest-license-error, .guest-license-error-footer {
+        background: black;
+    }
+    .guest-license-error-dropdown-options {
+        color: black;
     }`);
     log("Patched Dark Mode.", false);
     // Try loading in the settings, if failed, load default settings
@@ -135,6 +141,12 @@ function init() {
         addStyle(`.app-loading {
             background-color: white;
             color: black;
+        }
+        .guest-license-error, .guest-license-error-footer {
+            background: #f0f0f0;
+        }
+        .guest-license-error-dropdown-options {
+            color: white;
         }`);
     }
     //window.addEventListener ("load", mainFunc, false);
@@ -168,13 +180,21 @@ async function mainFunc() {
             userInfoBtn.appendChild(profileImgParent);
             btn.appendChild(userInfoBtn);
             btn.addEventListener('click', openMenu);
-            var waffleheader = document.getElementsByClassName("waffle-header")[0];
             var dlink = document.createElement("a");
             dlink.innerHTML = "Donate                               ";
             dlink.target = "_blank";
             dlink.href = parsed.donationLink;
             dlink.id = "tutils-donation-long";
-            waffleheader.appendChild(dlink);
+            var waffleheader = document.getElementsByClassName("waffle-header");
+            if(waffleheader.length > 0) {
+                waffleheader[0].appendChild(dlink);
+            } else {
+                waffleheader = document.getElementsByClassName("powerbar-profile fadeable");
+                if(waffleheader.length > 0) {
+                    dlink.innerHTML = "Donate";
+                    waffleheader[0].insertBefore(dlink, waffleheader[0].firstChild);
+                }
+            }
             bar[0].appendChild(btn);
             // Remove annoying Desktop app download button
             if(settings.doRemoveAnnoy) {
@@ -898,14 +918,14 @@ async function joiningAction(joinDelay, joinWait, switchChannel, switchTo, switc
             }
             await sleep(50);
             // Check if toggle camera exists
-            var toggles = document.getElementsByTagName("toggle-button");
+            var toggles = document.getElementsByClassName("ts-toggle-button");
             for(var i = 0; i < toggles.length; i++) {
-                if(toggles[i].getAttribute("on-click") == "ctrl.toggleVideo()") {
-                    var toggleCam = toggles[i];
-                    if(toggleCam.length > 0) {
+                if(toggles[i].getAttribute("track-summary") != undefined) {
+                    if(toggles[i].getAttribute("track-summary").toLowerCase().includes("toggle camera")) {
+                        var toggleCam = toggles[i];
                         // Check if camera is on, then turn off if it is.
-                        if(toggleCam.getAttribute("telemetry-outcome") == "26") {
-                            toggleCam.children[0].children[0].click();
+                        if(toggleCam.getAttribute("aria-pressed") == "true") {
+                            toggleCam.click();
                             log("Turned camera off.");
                         }
                     }
@@ -1032,6 +1052,10 @@ async function doRemoveAnnoy(removeAnnoyDelay) {
             });
         } catch (error) {
             console.warn(error);
+        }
+        var dlAppBanner = document.getElementsByClassName("app-notification-banner banner-show promo-banner accent-banner button-banner engagement-surface");
+        if(dlAppBanner.length > 0) {
+            dlAppBanner[0].remove();
         }
         // Wait
         await sleep(removeAnnoyDelay);
