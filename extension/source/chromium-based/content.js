@@ -48,6 +48,9 @@ function preInit() {
     .app-loading {
         background-color: black;
         color: white;
+    }
+    .guest-license-error, .guest-license-error-footer {
+        background: black;
     }`);
     log("Patched Dark Mode.", false);
     // Try loading in the settings, if failed, load default settings
@@ -135,6 +138,9 @@ function init() {
         addStyle(`.app-loading {
             background-color: white;
             color: black;
+        }
+        .guest-license-error, .guest-license-error-footer {
+            background: #f0f0f0;
         }`);
     }
     //window.addEventListener ("load", mainFunc, false);
